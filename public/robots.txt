@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://webtoolhub.yhdeabba.com/sitemap.xml
