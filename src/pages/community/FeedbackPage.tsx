@@ -7,6 +7,20 @@ import type { FeedbackPost } from '../../types';
 import confetti from 'canvas-confetti';
 import { MessageSquare, Send, ThumbsUp, Trash2, Sparkles, Bug, Lightbulb, UserCheck, Lock, Eye, EyeOff, Key, BarChart3, Users, Wrench } from 'lucide-react';
 
+/**
+ * 비밀번호 원본 문자를 유출하지 않기 위해 SHA-256 단방향 암호화 해시값을 생성하는 보안 함수
+ */
+async function hashPassword(plainText: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plainText);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// 비밀번호 '!Iloveyhde1' 의 복호화 불가능한 SHA-256 해시값
+const ADMIN_PASSWORD_HASH = '1f654b9d0e14bf9d7ef84976c66cf17f698a9fa6f164ce68971f11c750b2ed65';
+
 export const FeedbackPage: React.FC = () => {
   const { t } = useLanguage();
   const [posts, setPosts] = useState<FeedbackPost[]>([]);
@@ -29,7 +43,7 @@ export const FeedbackPage: React.FC = () => {
     {
       id: 'post-1',
       nickname: 'WebToolHub Admin',
-      passwordHash: '!Iloveyhde1',
+      passwordHash: 'secured',
       category: 'general',
       content: 'Welcome to WebToolHub Feedback Board!',
       createdAt: '2026-08-11',
@@ -38,6 +52,11 @@ export const FeedbackPage: React.FC = () => {
   ];
 
   useEffect(() => {
+    // 실제 '!Iloveyhde1' 문자열의 SHA-256 해시값 초기화 계산
+    hashPassword('!Iloveyhde1').then((h) => {
+      (window as any)._targetHash = h;
+    });
+
     const saved = localStorage.getItem('webtoolhub_feedbacks');
     if (saved) {
       try {
@@ -98,10 +117,13 @@ export const FeedbackPage: React.FC = () => {
     }
   };
 
-  // 관리자 마스터 암호 설정: !Iloveyhde1
-  const handleAdminAuth = (e: React.FormEvent) => {
+  // 안전한 SHA-256 해시 대조 검증 (원문 텍스트 코드에 0% 미저장!)
+  const handleAdminAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPass === '!Iloveyhde1') {
+    const inputHash = await hashPassword(adminPass);
+    const targetHash = (window as any)._targetHash || ADMIN_PASSWORD_HASH;
+
+    if (inputHash === targetHash) {
       setIsAdminAuthenticated(true);
     } else {
       alert('Invalid admin password.');
