@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from 'react';
+import { ToolHeader } from '../../components/common/ToolHeader';
+import { AdBanner } from '../../components/ads/AdBanner';
+import { useLanguage } from '../../context/LanguageContext';
+import type { FeedbackPost } from '../../types';
+import confetti from 'canvas-confetti';
+import { MessageSquare, Send, ThumbsUp, Trash2, Sparkles, Bug, Lightbulb, UserCheck, Lock, Eye, EyeOff, Key, ShieldAlert } from 'lucide-react';
+
+export const FeedbackPage: React.FC = () => {
+  const { t } = useLanguage();
+  const [posts, setPosts] = useState<FeedbackPost[]>([]);
+  const [nickname, setNickname] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [category, setCategory] = useState<'bug' | 'feature' | 'general'>('feature');
+  const [content, setContent] = useState<string>('');
+
+  const [viewMode, setViewMode] = useState<'my' | 'admin'>('my');
+  const [authNick, setAuthNick] = useState<string>('');
+  const [authPass, setAuthPass] = useState<string>('');
+  const [adminPass, setAdminPass] = useState<string>('');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState<boolean>(false);
+
+  const defaultPosts: FeedbackPost[] = [
+    {
+      id: 'post-1',
+      nickname: 'WebToolHub Admin',
+      passwordHash: 'admin1234',
+      category: 'general',
+      content: 'Welcome to WebToolHub Feedback Board!',
+      createdAt: '2026-08-11',
+      likes: 15,
+    },
+  ];
+
+  useEffect(() => {
+    const saved = localStorage.getItem('webtoolhub_feedbacks');
+    if (saved) {
+      try {
+        setPosts(JSON.parse(saved));
+      } catch (e) {
+        setPosts(defaultPosts);
+      }
+    } else {
+      setPosts(defaultPosts);
+      localStorage.setItem('webtoolhub_feedbacks', JSON.stringify(defaultPosts));
+    }
+  }, []);
+
+  const savePosts = (newPosts: FeedbackPost[]) => {
+    setPosts(newPosts);
+    localStorage.setItem('webtoolhub_feedbacks', JSON.stringify(newPosts));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nickname.trim() || !password.trim() || !content.trim()) {
+      alert(t.nicknameLabel + ' ' + t.passwordLabel);
+      return;
+    }
+
+    const newPost: FeedbackPost = {
+      id: `post-${Date.now()}`,
+      nickname: nickname.trim(),
+      passwordHash: password.trim(),
+      category,
+      content: content.trim(),
+      createdAt: new Date().toISOString().split('T')[0],
+      likes: 0,
+    };
+
+    const nextPosts = [newPost, ...posts];
+    savePosts(nextPosts);
+
+    setAuthNick(nickname.trim());
+    setAuthPass(password.trim());
+    setIsUserAuthenticated(true);
+    setViewMode('my');
+
+    setContent('');
+    setPassword('');
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
+
+  const handleUserAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authNick || !authPass) return;
+    const hasPost = posts.some((p) => p.nickname === authNick && p.passwordHash === authPass);
+    if (hasPost) {
+      setIsUserAuthenticated(true);
+    } else {
+      alert('No post matched your nickname and password.');
+      setIsUserAuthenticated(false);
+    }
+  };
+
+  const handleAdminAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (adminPass === 'admin1234') {
+      setIsAdminAuthenticated(true);
+    } else {
+      alert('Invalid admin password.');
+      setIsAdminAuthenticated(false);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    if (!window.confirm('Delete this post?')) return;
+    const nextPosts = posts.filter((p) => p.id !== id);
+    savePosts(nextPosts);
+  };
+
+  const handleLike = (id: string) => {
+    const nextPosts = posts.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p));
+    savePosts(nextPosts);
+  };
+
+  const visiblePosts = isAdminAuthenticated && viewMode === 'admin'
+    ? posts
+    : isUserAuthenticated && viewMode === 'my'
+    ? posts.filter((p) => p.nickname === authNick && p.passwordHash === authPass)
+    : [];
+
+  const categoryBadge = (cat: FeedbackPost['category']) => {
+    switch (cat) {
+      case 'bug':
+        return <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Bug size={12} /> Bug</span>;
+      case 'feature':
+        return <span style={{ background: 'rgba(99, 102, 241, 0.2)', color: 'var(--accent-primary)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Sparkles size={12} /> Feature</span>;
+      default:
+        return <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><Lightbulb size={12} /> General</span>;
+    }
+  };
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <ToolHeader
+        toolId="feedback-board"
+        title="소통 & 피드백 게시판"
+        description="회원가입 없이 닉네임과 비밀번호로 자유롭게 신규 도구 요청 및 개선 의견을 남겨주세요."
+        badgeText="익명 커뮤니티"
+      />
+
+      <AdBanner slotId="feedback-top" />
+
+      {/* 작성 폼 - 100% 다국어 t 적용! */}
+      <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <MessageSquare size={20} color="var(--accent-primary)" /> {t.feedbackSubmitTitle}
+        </h3>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.nicknameLabel}</label>
+            <input
+              type="text"
+              placeholder={t.nicknamePlaceholder}
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.passwordLabel}</label>
+            <input
+              type="password"
+              placeholder={t.passwordPlaceholder}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
+            />
+          </div>
+
+          <div>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.categoryLabel}</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as any)}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
+            >
+              <option value="feature">{t.catFeature}</option>
+              <option value="bug">{t.catBug}</option>
+              <option value="general">{t.catGeneral}</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>{t.contentLabel}</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={t.contentPlaceholder}
+            rows={4}
+            style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
+          />
+        </div>
+
+        <button className="btn-primary" type="submit" style={{ alignSelf: 'flex-end', padding: '0.6rem 1.5rem' }}>
+          <Send size={16} /> {t.btnSubmit}
+        </button>
+      </form>
+
+      {/* 뷰 모드 탭 */}
+      <div className="glass-panel" style={{ padding: '1.25rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+          <button
+            onClick={() => setViewMode('my')}
+            className="btn-secondary"
+            style={{
+              border: viewMode === 'my' ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+              color: viewMode === 'my' ? 'var(--accent-primary)' : 'var(--text-main)',
+              fontWeight: viewMode === 'my' ? 700 : 500,
+            }}
+          >
+            <UserCheck size={16} /> {t.myPostsViewBtn}
+          </button>
+          <button
+            onClick={() => setViewMode('admin')}
+            className="btn-secondary"
+            style={{
+              border: viewMode === 'admin' ? '2px solid #ec4899' : '1px solid var(--border-color)',
+              color: viewMode === 'admin' ? '#ec4899' : 'var(--text-main)',
+              fontWeight: viewMode === 'admin' ? 700 : 500,
+            }}
+          >
+            <Lock size={16} /> {t.adminMasterViewBtn}
+          </button>
+        </div>
+
+        {/* 유저 본인 글 인증 폼 */}
+        {viewMode === 'my' && !isUserAuthenticated && (
+          <form onSubmit={handleUserAuth} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>🔒 {t.nicknameLabel}</span>
+            <input
+              type="text"
+              placeholder={t.nicknameLabel}
+              value={authNick}
+              onChange={(e) => setAuthNick(e.target.value)}
+              style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+            />
+            <input
+              type="password"
+              placeholder={t.passwordLabel}
+              value={authPass}
+              onChange={(e) => setAuthPass(e.target.value)}
+              style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+            />
+            <button className="btn-secondary" type="submit" style={{ fontSize: '0.85rem' }}>
+              <Eye size={14} /> {t.myPostsViewBtn}
+            </button>
+          </form>
+        )}
+
+        {/* 관리자 인증 폼 */}
+        {viewMode === 'admin' && !isAdminAuthenticated && (
+          <form onSubmit={handleAdminAuth} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ec4899' }}>🔑 Admin Master Key:</span>
+            <input
+              type="password"
+              placeholder="Admin password"
+              value={adminPass}
+              onChange={(e) => setAdminPass(e.target.value)}
+              style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
+            />
+            <button className="btn-primary" type="submit" style={{ fontSize: '0.85rem', padding: '0.4rem 1rem' }}>
+              <Key size={14} /> Admin Login
+            </button>
+          </form>
+        )}
+
+        {/* 안내 */}
+        {viewMode === 'my' && isUserAuthenticated && (
+          <div style={{ fontSize: '0.85rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <UserCheck size={16} /> Authenticated as [{authNick}].
+          </div>
+        )}
+        {viewMode === 'admin' && isAdminAuthenticated && (
+          <div style={{ fontSize: '0.85rem', color: '#ec4899', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <ShieldAlert size={16} /> Admin Master Mode: Viewing all {posts.length} user posts.
+          </div>
+        )}
+      </div>
+
+      {/* 게시글 리스트 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>
+          💬 {t.postsHeader} ({visiblePosts.length})
+        </h3>
+
+        {visiblePosts.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '3rem', textAlign: 'center', borderRadius: 'var(--radius-lg)', color: 'var(--text-muted)' }}>
+            {viewMode === 'my' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                <EyeOff size={32} />
+                <span>Verify your nickname and password above to view your private posts.</span>
+              </div>
+            ) : (
+              <span>Login with admin password to view all posts.</span>
+            )}
+          </div>
+        ) : (
+          visiblePosts.map((post) => (
+            <div key={post.id} className="glass-panel animate-fade-in" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{post.nickname}</span>
+                  {categoryBadge(post.category)}
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{post.createdAt}</span>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    className="btn-secondary"
+                    style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: 'var(--accent-primary)' }}
+                  >
+                    <ThumbsUp size={12} /> Like {post.likes}
+                  </button>
+
+                  {(isAdminAuthenticated || isUserAuthenticated) && (
+                    <button
+                      onClick={() => handleDelete(post.id)}
+                      style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                    >
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>
+                {post.content}
+              </p>
+            </div>
+          ))
+        )}
+      </div>
+
+      <AdBanner slotId="feedback-bottom" />
+    </div>
+  );
+};

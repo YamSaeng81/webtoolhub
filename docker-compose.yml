@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web-tool-hub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web-tool-hub
+    restart: always
+    ports:
+      - "3080:80"
+    environment:
+      - NODE_ENV=production
