@@ -1,25 +1,54 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import type { AdUnitProps } from '../../types';
 
+declare global {
+  interface Window {
+    adsbygoogle: any[];
+  }
+}
+
 export const AdBanner: React.FC<AdUnitProps> = ({
-  slotId = '0000000000',
+  slotId = 'default-slot',
   format = 'auto',
   style,
-  className = '',
+  className,
 }) => {
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      }
+    } catch (e) {
+      // 광고 푸시 예외 핸들링
+    }
+  }, [slotId]);
+
   return (
-    <div className={`adsense-unit ${className}`} style={style}>
+    <div
+      className={`ad-container ${className || ''}`}
+      style={{
+        margin: '1rem 0',
+        padding: '0.75rem',
+        borderRadius: 'var(--radius-md)',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--border-color)',
+        textAlign: 'center',
+        overflow: 'hidden',
+        ...style,
+      }}
+    >
+      {/* Google AdSense 실전 광고 유닛 (게시자 ID: ca-pub-8444978612329175) */}
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', minHeight: '90px' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+        style={{ display: 'block', width: '100%', minHeight: '90px' }}
+        data-ad-client="ca-pub-8444978612329175"
         data-ad-slot={slotId}
         data-ad-format={format}
         data-full-width-responsive="true"
-      ></ins>
-      <div className="adsense-placeholder-content">
-        <span>📢 Google AdSense Banner Area ({format.toUpperCase()})</span>
-      </div>
+      />
+      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.2rem' }}>
+        📢 ADVERTISEMENT (Google AdSense)
+      </span>
     </div>
   );
 };
