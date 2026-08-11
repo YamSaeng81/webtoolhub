@@ -29,7 +29,7 @@ export const FeedbackPage: React.FC = () => {
     {
       id: 'post-1',
       nickname: 'WebToolHub Admin',
-      passwordHash: 'admin1234',
+      passwordHash: '!Iloveyhde1',
       category: 'general',
       content: 'Welcome to WebToolHub Feedback Board!',
       createdAt: '2026-08-11',
@@ -98,9 +98,10 @@ export const FeedbackPage: React.FC = () => {
     }
   };
 
+  // 관리자 마스터 암호 설정: !Iloveyhde1
   const handleAdminAuth = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPass === 'admin1234') {
+    if (adminPass === '!Iloveyhde1') {
       setIsAdminAuthenticated(true);
     } else {
       alert('Invalid admin password.');
@@ -263,7 +264,7 @@ export const FeedbackPage: React.FC = () => {
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ec4899' }}>🔑 Admin Master Key:</span>
             <input
               type="password"
-              placeholder="Admin password (admin1234)"
+              placeholder="Enter Admin Master Password"
               value={adminPass}
               onChange={(e) => setAdminPass(e.target.value)}
               style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
