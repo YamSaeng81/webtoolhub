@@ -5,6 +5,7 @@ import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
 import { recognizeTextFromImage } from '../../utils/ocrService';
 import { useLanguage } from '../../context/LanguageContext';
+import { trackToolUsage } from '../../utils/analytics';
 import * as pdfjsLib from 'pdfjs-dist';
 import confetti from 'canvas-confetti';
 import { Copy, Download, RefreshCw, FileText, Check } from 'lucide-react';
@@ -63,17 +64,17 @@ export const OcrPdfPage: React.FC = () => {
 
     setIsProcessing(true);
     setProgress(10);
+    trackToolUsage('ocr-pdf', 'PDF & 이미지 OCR');
 
     try {
       let imageTarget: File | HTMLCanvasElement = file;
 
-      // PDF 파일인 경우 PDF.js를 사용해 Canvas로 변환하여 Tesseract에 렌더링 전달
       if (file.type.includes('pdf')) {
         setStatusText('Rendering PDF page to image...');
         const buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
         const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 2.0 }); // 2.0 고해상도 스케일로 OCR 정확도 극대화
+        const viewport = page.getViewport({ scale: 2.0 });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;

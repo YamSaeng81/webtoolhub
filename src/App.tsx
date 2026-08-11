@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
-import { Footer } from './components/layout/Footer';
 import { Sidebar } from './components/layout/Sidebar';
+import { Footer } from './components/layout/Footer';
 import { Home } from './pages/Home';
+import { trackPageView } from './utils/analytics';
 
-// PDF Tools
+// Pages Import
 import { ImageToPdfPage } from './pages/pdf/ImageToPdfPage';
 import { PdfToImagePage } from './pages/pdf/PdfToImagePage';
 import { ExtractPdfPage } from './pages/pdf/ExtractPdfPage';
@@ -12,49 +13,40 @@ import { CropPdfPage } from './pages/pdf/CropPdfPage';
 import { OcrPdfPage } from './pages/pdf/OcrPdfPage';
 import { PdfProtectPage } from './pages/pdf/PdfProtectPage';
 
-// Image Tools
 import { ImageCompressPage } from './pages/image/ImageCompressPage';
 import { ImageConvertPage } from './pages/image/ImageConvertPage';
 import { ImageResizePage } from './pages/image/ImageResizePage';
 import { FaviconGeneratorPage } from './pages/image/FaviconGeneratorPage';
 
-// Media Tools
 import { VideoToMp3Page } from './pages/media/VideoToMp3Page';
 import { AudioCutterPage } from './pages/media/AudioCutterPage';
 
-// Text Tools
 import { TextCounterPage } from './pages/text/TextCounterPage';
 import { JsonFormatterPage } from './pages/text/JsonFormatterPage';
 import { TextDiffPage } from './pages/text/TextDiffPage';
 
-// Community Tools
 import { FeedbackPage } from './pages/community/FeedbackPage';
 
-export const App: React.FC = () => {
-  const [currentPath, setCurrentPath] = useState<string>(window.location.pathname || '/');
+export default function App() {
+  const [currentPath, setCurrentPath] = useState<string>('/');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    // 페이지 라우팅 변경 시 통계 트래커(방문자 수 / PV) 실행
+    trackPageView(currentPath);
+    window.scrollTo(0, 0);
+  }, [currentPath]);
 
   const handleNavigate = (path: string) => {
-    window.history.pushState({}, '', path);
     setCurrentPath(path);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const renderCurrentPage = () => {
+  const renderPage = () => {
     switch (currentPath) {
       case '/':
-      case '/index.html':
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
-      
-      // PDF Tools
+
+      // 📄 PDF
       case '/pdf/image-to-pdf':
         return <ImageToPdfPage />;
       case '/pdf/pdf-to-image':
@@ -68,7 +60,7 @@ export const App: React.FC = () => {
       case '/pdf/protect':
         return <PdfProtectPage />;
 
-      // Image Tools
+      // 🖼️ IMAGE
       case '/image/compress':
         return <ImageCompressPage />;
       case '/image/convert':
@@ -78,13 +70,13 @@ export const App: React.FC = () => {
       case '/image/favicon-generator':
         return <FaviconGeneratorPage />;
 
-      // Media Tools
+      // 🎬 MEDIA
       case '/media/video-to-mp3':
         return <VideoToMp3Page />;
       case '/media/audio-cutter':
         return <AudioCutterPage />;
 
-      // Text Tools
+      // 🔤 TEXT
       case '/text/counter':
         return <TextCounterPage />;
       case '/text/json-formatter':
@@ -92,7 +84,7 @@ export const App: React.FC = () => {
       case '/text/diff':
         return <TextDiffPage />;
 
-      // Community Tools
+      // 💬 COMMUNITY
       case '/community/feedback':
         return <FeedbackPage />;
 
@@ -102,21 +94,18 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="app-container">
-      <Header
-        currentPath={currentPath}
-        onNavigate={handleNavigate}
-        onSearch={(q) => setSearchQuery(q)}
-      />
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
+      <Header currentPath={currentPath} onNavigate={handleNavigate} onSearch={setSearchQuery} />
 
-      <div className="main-layout">
-        <main className="content-area">{renderCurrentPage()}</main>
+      <div style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '1.5rem', display: 'flex', gap: '1.5rem' }}>
         <Sidebar currentPath={currentPath} onNavigate={handleNavigate} />
+
+        <main style={{ flex: 1, minWidth: 0 }}>
+          {renderPage()}
+        </main>
       </div>
 
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
-};
-
-export default App;
+}

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
+import { getAnalyticsSummary } from '../../utils/analytics';
 import type { FeedbackPost } from '../../types';
 import confetti from 'canvas-confetti';
-import { MessageSquare, Send, ThumbsUp, Trash2, Sparkles, Bug, Lightbulb, UserCheck, Lock, Eye, EyeOff, Key, ShieldAlert } from 'lucide-react';
+import { MessageSquare, Send, ThumbsUp, Trash2, Sparkles, Bug, Lightbulb, UserCheck, Lock, Eye, EyeOff, Key, BarChart3, Users, Wrench } from 'lucide-react';
 
 export const FeedbackPage: React.FC = () => {
   const { t } = useLanguage();
@@ -20,6 +21,9 @@ export const FeedbackPage: React.FC = () => {
   const [adminPass, setAdminPass] = useState<string>('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState<boolean>(false);
+
+  const statsSummary = getAnalyticsSummary();
+  const toolStatsList = Object.values(statsSummary.toolStats || {}).sort((a, b) => b.count - a.count);
 
   const defaultPosts: FeedbackPost[] = [
     {
@@ -143,7 +147,7 @@ export const FeedbackPage: React.FC = () => {
 
       <AdBanner slotId="feedback-top" />
 
-      {/* 작성 폼 - 100% 다국어 t 적용! */}
+      {/* 작성 폼 */}
       <form onSubmit={handleSubmit} className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <MessageSquare size={20} color="var(--accent-primary)" /> {t.feedbackSubmitTitle}
@@ -259,7 +263,7 @@ export const FeedbackPage: React.FC = () => {
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ec4899' }}>🔑 Admin Master Key:</span>
             <input
               type="password"
-              placeholder="Admin password"
+              placeholder="Admin password (admin1234)"
               value={adminPass}
               onChange={(e) => setAdminPass(e.target.value)}
               style={{ padding: '0.4rem 0.8rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.85rem' }}
@@ -270,15 +274,52 @@ export const FeedbackPage: React.FC = () => {
           </form>
         )}
 
-        {/* 안내 */}
-        {viewMode === 'my' && isUserAuthenticated && (
-          <div style={{ fontSize: '0.85rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <UserCheck size={16} /> Authenticated as [{authNick}].
-          </div>
-        )}
+        {/* 관리자 대시보드 - 통계 수치 표출 */}
         {viewMode === 'admin' && isAdminAuthenticated && (
-          <div style={{ fontSize: '0.85rem', color: '#ec4899', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <ShieldAlert size={16} /> Admin Master Mode: Viewing all {posts.length} user posts.
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginTop: '0.5rem', background: 'rgba(236, 72, 153, 0.05)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(236, 72, 153, 0.3)' }}>
+            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#ec4899', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <BarChart3 size={20} /> 📊 실시간 웹사이트 통계 대시보드 (Admin)
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+              <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                  <Users size={14} /> 오늘 방문자 수
+                </span>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10b981', marginTop: '0.2rem', display: 'block' }}>
+                  {statsSummary.todayVisitors || 1} 명
+                </span>
+              </div>
+              <div className="glass-panel" style={{ padding: '1rem', textAlign: 'center', borderRadius: 'var(--radius-md)' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                  <BarChart3 size={14} /> 총 페이지뷰 (PV)
+                </span>
+                <span style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent-primary)', marginTop: '0.2rem', display: 'block' }}>
+                  {statsSummary.totalPageviews || 1} 회
+                </span>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '0.5rem' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                <Wrench size={16} /> 15개 툴별 실시간 사용량 랭킹:
+              </span>
+
+              {toolStatsList.length === 0 ? (
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  아직 도구 사용 데이터가 집계 대기 중입니다. 도구를 사용하면 카운트가 즉시 반영됩니다.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {toolStatsList.map((st, idx) => (
+                    <div key={st.toolId} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.4rem 0.8rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                      <span>#{idx + 1} {st.toolName} ({st.toolId})</span>
+                      <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{st.count}회 실행</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
