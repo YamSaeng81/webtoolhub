@@ -17,7 +17,8 @@ export const VideoConvertPage: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  // 변환 전용 백그라운드 오프스크린 숨김 비디오 참조 ⭐
+  const hiddenVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const labels = {
     ko: { selectTitle: '변환할 동영상(MP4, WebM, MOV) 파일을 선택하세요', targetLabel: '변환할 목표 동영상 포맷:', btnConvert: '동영상 포맷 변환 실행', doneTitle: '동영상 포맷 변환 완료!' },
@@ -50,36 +51,36 @@ export const VideoConvertPage: React.FC = () => {
   };
 
   /**
-   * 영상(비디오 트랙) + 오디오 트랙 100% 음원 합성 변환 ⭐
+   * 사용자 조작과 100% 분리된 백그라운드 오프스크린 동영상 변환 ⭐
    */
   const handleConvertVideo = async () => {
-    const video = videoRef.current;
-    if (!video || !file) return;
+    const hiddenVideo = hiddenVideoRef.current;
+    if (!hiddenVideo || !file) return;
 
     setIsProcessing(true);
     setProgress(10);
     trackToolUsage('video-convert', '동영상 포맷 변환');
 
     try {
-      video.currentTime = 0;
-      await new Promise((res) => { video.onseeked = res; });
+      hiddenVideo.currentTime = 0;
+      await new Promise((res) => { hiddenVideo.onseeked = res; });
 
-      // 1. 비디오 엘리먼트 고유 캡처 스트림 생성 (오디오 트랙 포함)
+      // 1. 숨김 비디오 스트림 캡처 (비디오 + 오디오 트랙)
       let videoMediaStream: MediaStream | null = null;
-      if ((video as any).captureStream) {
-        videoMediaStream = (video as any).captureStream();
-      } else if ((video as any).mozCaptureStream) {
-        videoMediaStream = (video as any).mozCaptureStream();
+      if ((hiddenVideo as any).captureStream) {
+        videoMediaStream = (hiddenVideo as any).captureStream();
+      } else if ((hiddenVideo as any).mozCaptureStream) {
+        videoMediaStream = (hiddenVideo as any).mozCaptureStream();
       }
 
-      // 2. Canvas 캔버스 비디오 트랙 생성
+      // 2. 오프스크린 Canvas 캔버스 트랙 생성
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth || 1280;
-      canvas.height = video.videoHeight || 720;
+      canvas.width = hiddenVideo.videoWidth || 1280;
+      canvas.height = hiddenVideo.videoHeight || 720;
       const ctx = canvas.getContext('2d');
       const canvasStream = canvas.captureStream(30);
 
-      // 3. 🎵 비디오 미디어 스트림에서 오디오 트랙을 가져와 캔버스 스트림에 합성! ⭐
+      // 3. 오디오 트랙 결합
       if (videoMediaStream) {
         const audioTracks = videoMediaStream.getAudioTracks();
         if (audioTracks.length > 0) {
@@ -87,7 +88,7 @@ export const VideoConvertPage: React.FC = () => {
         }
       }
 
-      // 4. 지원 가능한 MediaRecorder MimeType 지정
+      // 4. MimeType 설정
       const requestedMime = targetFormat === 'webm' ? 'video/webm;codecs=vp8,opus' : 'video/mp4';
       const recorderMime = MediaRecorder.isTypeSupported(requestedMime) 
         ? requestedMime 
@@ -110,24 +111,24 @@ export const VideoConvertPage: React.FC = () => {
       };
 
       mediaRecorder.start();
-      video.muted = false; // 오디오 렌더링을 위해 음소거 해제 ⭐
-      video.play();
+      hiddenVideo.muted = false;
+      hiddenVideo.play();
 
-      const durationSec = video.duration || 10;
+      const durationSec = hiddenVideo.duration || 10;
       let animId: number;
 
       const renderLoop = () => {
-        if (video.paused || video.ended) {
+        if (hiddenVideo.paused || hiddenVideo.ended) {
           cancelAnimationFrame(animId);
           if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
           return;
         }
 
         if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(hiddenVideo, 0, 0, canvas.width, canvas.height);
         }
 
-        const pct = Math.min(95, Math.round((video.currentTime / durationSec) * 100));
+        const pct = Math.min(95, Math.round((hiddenVideo.currentTime / durationSec) * 100));
         setProgress(pct);
 
         animId = requestAnimationFrame(renderLoop);
@@ -135,7 +136,7 @@ export const VideoConvertPage: React.FC = () => {
 
       renderLoop();
 
-      video.onended = () => {
+      hiddenVideo.onended = () => {
         if (mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop();
         }
@@ -148,7 +149,7 @@ export const VideoConvertPage: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (videoRef.current) videoRef.current.pause();
+    if (hiddenVideoRef.current) hiddenVideoRef.current.pause();
     setFile(null);
     setVideoUrl(null);
     setResultUrl(null);
@@ -162,10 +163,20 @@ export const VideoConvertPage: React.FC = () => {
       <ToolHeader
         toolId="video-convert"
         title="동영상 포맷 변환 (Video Converter)"
-        description="MP4, WebM 동영상 포맷 간을 영상과 오디오 음원 트랙 손실 없이 브라우저 메모리 상에서 안전하게 변환합니다."
+        description="MP4, WebM 동영상 포맷 간을 영상과 오디오 음원 트랙 손실 없이 브라우저 백그라운드 메모리 상에서 안전하게 변환합니다."
       />
 
       <AdBanner slotId="videoconvert-top" />
+
+      {/* 백그라운드 변환 전용 숨김 비디오 엘리먼트 ⭐ */}
+      {videoUrl && (
+        <video
+          ref={hiddenVideoRef}
+          src={videoUrl}
+          preload="auto"
+          style={{ display: 'none', position: 'absolute', pointerEvents: 'none', opacity: 0 }}
+        />
+      )}
 
       {resultUrl && file ? (
         <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
@@ -205,7 +216,7 @@ export const VideoConvertPage: React.FC = () => {
 
           {videoUrl && (
             <div style={{ maxHeight: '280px', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <video ref={videoRef} src={videoUrl} controls style={{ maxHeight: '260px', maxWidth: '100%' }} />
+              <video src={videoUrl} controls style={{ maxHeight: '260px', maxWidth: '100%' }} />
             </div>
           )}
 
