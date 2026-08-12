@@ -1,14 +1,26 @@
 import { PDFDocument, PDFName, PDFHexString } from 'pdf-lib';
 
+export type PageSizeMode = 'a4' | 'original';
+
 /**
  * 이미지 파일들(JPG, PNG, WEBP 등)을 하나의 PDF 문서로 병합하는 함수
+ * @param imageFiles 이미지 파일 배열
+ * @param pageSizeMode 'a4' (A4 규격 자동 비율 맞춤) 또는 'original' (원본 픽셀 크기)
  */
-export async function imagesToPdf(imageFiles: File[]): Promise<Uint8Array> {
+export async function imagesToPdf(
+  imageFiles: File[],
+  pageSizeMode: PageSizeMode = 'a4'
+): Promise<Uint8Array> {
   if (!imageFiles || imageFiles.length === 0) {
     throw new Error('최소 1개 이상의 이미지 파일이 필요합니다.');
   }
 
   const pdfDoc = await PDFDocument.create();
+
+  // A4 표준 크기 (포인트 단위: 1 pt = 1/72 inch, A4 = 595.28 x 841.89)
+  const A4_WIDTH = 595.28;
+  const A4_HEIGHT = 841.89;
+  const MARGIN = 20; // 20pt 여백
 
   for (const file of imageFiles) {
     const arrayBuffer = await file.arrayBuffer();
@@ -22,14 +34,45 @@ export async function imagesToPdf(imageFiles: File[]): Promise<Uint8Array> {
       image = await pdfDoc.embedPng(arrayBuffer);
     }
 
-    const { width, height } = image;
-    const page = pdfDoc.addPage([width, height]);
-    page.drawImage(image, {
-      x: 0,
-      y: 0,
-      width: width,
-      height: height,
-    });
+    const { width: imgW, height: imgH } = image;
+
+    if (pageSizeMode === 'original') {
+      // 1. 원본 이미지 크기 모드
+      const page = pdfDoc.addPage([imgW, imgH]);
+      page.drawImage(image, {
+        x: 0,
+        y: 0,
+        width: imgW,
+        height: imgH,
+      });
+    } else {
+      // 2. A4 표준 규격 자동 맞춤 모드 (가로/세로 사진 비율에 따른 자동 인쇄 규격)
+      const isLandscape = imgW > imgH;
+      const pageWidth = isLandscape ? A4_HEIGHT : A4_WIDTH;
+      const pageHeight = isLandscape ? A4_WIDTH : A4_HEIGHT;
+
+      const page = pdfDoc.addPage([pageWidth, pageHeight]);
+
+      // 여백을 고려한 이미지 최대 출력 영역
+      const maxW = pageWidth - MARGIN * 2;
+      const maxH = pageHeight - MARGIN * 2;
+
+      // 원본 비율(Aspect Ratio) 보존 계산
+      const scale = Math.min(maxW / imgW, maxH / imgH);
+      const drawW = imgW * scale;
+      const drawH = imgH * scale;
+
+      // 가운데 정렬 (Center Fit)
+      const x = (pageWidth - drawW) / 2;
+      const y = (pageHeight - drawH) / 2;
+
+      page.drawImage(image, {
+        x,
+        y,
+        width: drawW,
+        height: drawH,
+      });
+    }
   }
 
   return await pdfDoc.save();
@@ -92,7 +135,6 @@ export async function cropPdfMargins(
 
 /**
  * PDF 열람 비밀번호(Open Password) 암호화 주입 함수
- * 표준 PDF /Encrypt 객체를 세팅하여 모든 뷰어에서 비밀번호 팝업을 강제 호출합니다.
  */
 export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): Promise<Uint8Array> {
   if (!userPassword || userPassword.trim() === '') {
@@ -106,7 +148,6 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
 
   const context = pdfDoc.context;
 
-  // Standard Encryption Dictionary 주입
   const encryptDict = context.obj({
     Filter: 'Standard',
     V: 2,

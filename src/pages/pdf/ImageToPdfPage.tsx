@@ -3,13 +3,15 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
-import { imagesToPdf } from '../../utils/pdfServices';
+import { imagesToPdf, type PageSizeMode } from '../../utils/pdfServices';
+import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
-import { Download, Trash2, FileCheck, RefreshCw } from 'lucide-react';
+import { Download, Trash2, FileCheck, RefreshCw, Layout } from 'lucide-react';
 
 export const ImageToPdfPage: React.FC = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [pageSizeMode, setPageSizeMode] = useState<PageSizeMode>('a4');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [pdfResultUrl, setPdfResultUrl] = useState<string | null>(null);
@@ -36,10 +38,11 @@ export const ImageToPdfPage: React.FC = () => {
 
     setIsProcessing(true);
     setProgress(30);
+    trackToolUsage('image-to-pdf', '이미지를 PDF로 변환');
 
     try {
       setProgress(60);
-      const pdfBytes = await imagesToPdf(selectedFiles);
+      const pdfBytes = await imagesToPdf(selectedFiles, pageSizeMode);
       const blob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
 
@@ -97,7 +100,39 @@ export const ImageToPdfPage: React.FC = () => {
           />
 
           {selectedFiles.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              
+              {/* PDF 페이지 규격 선택 옵션 UI ⭐ */}
+              <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <Layout size={16} color="var(--accent-primary)" /> PDF 페이지 크기 규격 설정:
+                </span>
+                
+                <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <input
+                      type="radio"
+                      name="pageSizeMode"
+                      value="a4"
+                      checked={pageSizeMode === 'a4'}
+                      onChange={() => setPageSizeMode('a4')}
+                    />
+                    <span>📄 A4 표준 규격으로 통일 (추천: 인쇄 & 열람에 가장 깔끔함)</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                    <input
+                      type="radio"
+                      name="pageSizeMode"
+                      value="original"
+                      checked={pageSizeMode === 'original'}
+                      onChange={() => setPageSizeMode('original')}
+                    />
+                    <span>🖼️ 사진 원본 크기 1:1 유지 (이미지 크기대로 개별 생성)</span>
+                  </label>
+                </div>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontSize: '1rem', fontWeight: 700 }}>
                   Selected Images ({selectedFiles.length})
