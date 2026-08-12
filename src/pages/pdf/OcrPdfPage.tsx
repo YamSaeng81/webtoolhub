@@ -4,7 +4,7 @@ import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
 import { recognizeTextFromImage } from '../../utils/ocrService';
-import { createSearchablePdf } from '../../utils/pdfServices';
+import { mergePdfBuffers } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -13,17 +13,12 @@ import { Copy, Download, RefreshCw, FileText, Check, Search } from 'lucide-react
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
-interface ProcessedPageResult {
-  canvas: HTMLCanvasElement;
-  text: string;
-}
-
 export const OcrPdfPage: React.FC = () => {
   const { language, t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [extractedText, setExtractedText] = useState<string>('');
-  const [processedPages, setProcessedPages] = useState<ProcessedPageResult[]>([]);
+  const [pageCount, setPageCount] = useState<number>(0);
   const [searchablePdfUrl, setSearchablePdfUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -44,7 +39,7 @@ export const OcrPdfPage: React.FC = () => {
 
     setFile(selected);
     setSearchablePdfUrl(null);
-    setProcessedPages([]);
+    setExtractedText('');
 
     if (selected.type.startsWith('image/')) {
       setPreviewUrl(URL.createObjectURL(selected));
@@ -70,7 +65,7 @@ export const OcrPdfPage: React.FC = () => {
   };
 
   /**
-   * PDF 전체 페이지 순차 OCR 인코딩 & 검색 가능한 PDF (Searchable PDF) 생성 ⭐
+   * PDF 전체 페이지 Tesseract HOCR 인코딩 & 100% 검색 가능한 Searchable PDF 생성 ⭐
    */
   const handleStartOcr = async () => {
     if (!file) return;
@@ -79,21 +74,23 @@ export const OcrPdfPage: React.FC = () => {
     setProgress(5);
     trackToolUsage('ocr-pdf', 'PDF & 이미지 OCR');
     setExtractedText('');
-    setProcessedPages([]);
+    setSearchablePdfUrl(null);
 
     try {
-      const pageResults: ProcessedPageResult[] = [];
+      const generatedPdfBuffers: Uint8Array[] = [];
       let fullTextCombined = '';
+      let totalNum = 1;
 
       if (file.type.includes('pdf')) {
         const buffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-        const totalPages = pdf.numPages;
+        totalNum = pdf.numPages;
+        setPageCount(totalNum);
 
-        for (let i = 1; i <= totalPages; i++) {
-          setStatusText(`Rendering PDF Page ${i} / ${totalPages}...`);
+        for (let i = 1; i <= totalNum; i++) {
+          setStatusText(`Rendering & OCR Processing Page ${i} / ${totalNum}...`);
           const page = await pdf.getPage(i);
-          const viewport = page.getViewport({ scale: 2.0 });
+          const viewport = page.getViewport({ scale: 2.0 }); // 2.0x 고화질
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
           canvas.height = viewport.height;
@@ -102,45 +99,42 @@ export const OcrPdfPage: React.FC = () => {
           if (context) {
             await page.render({ canvasContext: context, viewport, canvas }).promise;
 
-            setStatusText(`Recognizing OCR Text for Page ${i} / ${totalPages}...`);
-            const pageText = await recognizeTextFromImage(canvas, 'kor+eng', (p) => {
-              const baseProg = Math.round(((i - 1) / totalPages) * 100);
-              const curProg = Math.round((p.progress / totalPages) * 100);
+            // Tesseract 내장 HOCR PDF 생성 엔진 구동 ⭐
+            const res = await recognizeTextFromImage(canvas, 'kor+eng', (p) => {
+              const baseProg = Math.round(((i - 1) / totalNum) * 100);
+              const curProg = Math.round((p.progress / totalNum) * 100);
               setProgress(Math.min(95, baseProg + curProg));
             });
 
-            pageResults.push({ canvas, text: pageText });
-            fullTextCombined += `--- [ Page ${i} / ${totalPages} ] ---\n${pageText}\n\n`;
+            fullTextCombined += `--- [ Page ${i} / ${totalNum} ] ---\n${res.text}\n\n`;
+            if (res.pdfBytes) {
+              generatedPdfBuffers.push(res.pdfBytes);
+            }
           }
         }
       } else {
+        // 이미지 파일 처리
+        setPageCount(1);
         setStatusText('Recognizing image OCR text...');
-        const imageCanvas = document.createElement('canvas');
-        const img = new Image();
-        img.src = previewUrl || URL.createObjectURL(file);
-        await new Promise((res) => { img.onload = res; });
-
-        imageCanvas.width = img.width;
-        imageCanvas.height = img.height;
-        const ctx = imageCanvas.getContext('2d');
-        if (ctx) ctx.drawImage(img, 0, 0);
-
-        const text = await recognizeTextFromImage(file, 'kor+eng', (p) => {
+        const res = await recognizeTextFromImage(file, 'kor+eng', (p) => {
           setProgress(Math.round(p.progress * 100));
         });
 
-        pageResults.push({ canvas: imageCanvas, text });
-        fullTextCombined = text;
+        fullTextCombined = res.text;
+        if (res.pdfBytes) {
+          generatedPdfBuffers.push(res.pdfBytes);
+        }
       }
 
       setExtractedText(fullTextCombined);
-      setProcessedPages(pageResults);
 
-      // 🔍 검색 가능한 OCR PDF 생성 (Searchable PDF) ⭐
-      setStatusText('Generating Searchable OCR PDF...');
-      const pdfBytes = await createSearchablePdf(pageResults);
-      const pdfBlob = new Blob([pdfBytes as unknown as BlobPart], { type: 'application/pdf' });
-      setSearchablePdfUrl(URL.createObjectURL(pdfBlob));
+      // 🔍 Tesseract HOCR PDF 페이지들을 단 1개의 완벽한 검색형 PDF로 통합 병합 ⭐
+      if (generatedPdfBuffers.length > 0) {
+        setStatusText('Merging Searchable OCR PDF...');
+        const mergedBytes = await mergePdfBuffers(generatedPdfBuffers);
+        const pdfBlob = new Blob([mergedBytes as unknown as BlobPart], { type: 'application/pdf' });
+        setSearchablePdfUrl(URL.createObjectURL(pdfBlob));
+      }
 
       setProgress(100);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
@@ -170,9 +164,9 @@ export const OcrPdfPage: React.FC = () => {
     setFile(null);
     setPreviewUrl(null);
     setExtractedText('');
-    setProcessedPages([]);
     setSearchablePdfUrl(null);
     setProgress(0);
+    setPageCount(0);
   };
 
   return (
@@ -189,11 +183,11 @@ export const OcrPdfPage: React.FC = () => {
         <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <FileText size={20} color="var(--accent-primary)" /> {labels.resultTitle} ({processedPages.length} Pages)
+              <FileText size={20} color="var(--accent-primary)" /> {labels.resultTitle} ({pageCount} Pages)
             </h3>
             
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {/* 🔍 검색 가능한 OCR PDF 다운로드 버튼 ⭐ */}
+              {/* 🔍 100% 검색 가능한 OCR PDF 다운로드 버튼 ⭐ */}
               {searchablePdfUrl && (
                 <a
                   href={searchablePdfUrl}
