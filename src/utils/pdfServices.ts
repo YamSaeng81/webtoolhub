@@ -1,11 +1,65 @@
-import { PDFDocument, PDFName, PDFHexString } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFHexString, StandardFonts, rgb } from 'pdf-lib';
 
 export type PageSizeMode = 'a4' | 'original';
 
 /**
+ * OCR 추출 텍스트와 캔버스 이미지를 기반으로 '검색 가능한 PDF(Searchable PDF)'를 생성하는 함수
+ */
+export async function createSearchablePdf(
+  pagesData: { canvas: HTMLCanvasElement; text: string }[]
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  for (const pageItem of pagesData) {
+    const { canvas, text } = pageItem;
+    const imgDataUrl = canvas.toDataURL('image/png');
+    const pngImage = await pdfDoc.embedPng(imgDataUrl);
+
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // 페이지 생성 (픽셀 크기 1:1)
+    const page = pdfDoc.addPage([width, height]);
+
+    // 배경에 이미지 그리기
+    page.drawImage(pngImage, {
+      x: 0,
+      y: 0,
+      width,
+      height,
+    });
+
+    // 이미지 위에 텍스트 레이어를 덮어씌워 검색 및 드래그 복사가 가능하도록 인코딩 ⭐
+    if (text && text.trim().length > 0) {
+      const cleanLines = text.split('\n').filter((l) => l.trim().length > 0);
+      let currentY = height - 30;
+
+      cleanLines.forEach((line) => {
+        if (currentY > 20) {
+          try {
+            page.drawText(line, {
+              x: 20,
+              y: currentY,
+              size: 10,
+              font,
+              color: rgb(0, 0, 0),
+              opacity: 0, // 투명 텍스트 레이어 (Ctrl+F 검색 및 드래그 복사 전용)
+            });
+          } catch (e) {
+            // 한글/특수문자 인코딩 예외 처리
+          }
+          currentY -= 14;
+        }
+      });
+    }
+  }
+
+  return await pdfDoc.save();
+}
+
+/**
  * 이미지 파일들(JPG, PNG, WEBP 등)을 하나의 PDF 문서로 병합하는 함수
- * @param imageFiles 이미지 파일 배열
- * @param pageSizeMode 'a4' (A4 규격 자동 비율 맞춤) 또는 'original' (원본 픽셀 크기)
  */
 export async function imagesToPdf(
   imageFiles: File[],
@@ -17,10 +71,9 @@ export async function imagesToPdf(
 
   const pdfDoc = await PDFDocument.create();
 
-  // A4 표준 크기 (포인트 단위: 1 pt = 1/72 inch, A4 = 595.28 x 841.89)
   const A4_WIDTH = 595.28;
   const A4_HEIGHT = 841.89;
-  const MARGIN = 20; // 20pt 여백
+  const MARGIN = 20;
 
   for (const file of imageFiles) {
     const arrayBuffer = await file.arrayBuffer();
@@ -37,7 +90,6 @@ export async function imagesToPdf(
     const { width: imgW, height: imgH } = image;
 
     if (pageSizeMode === 'original') {
-      // 1. 원본 이미지 크기 모드
       const page = pdfDoc.addPage([imgW, imgH]);
       page.drawImage(image, {
         x: 0,
@@ -46,23 +98,19 @@ export async function imagesToPdf(
         height: imgH,
       });
     } else {
-      // 2. A4 표준 규격 자동 맞춤 모드 (가로/세로 사진 비율에 따른 자동 인쇄 규격)
       const isLandscape = imgW > imgH;
       const pageWidth = isLandscape ? A4_HEIGHT : A4_WIDTH;
       const pageHeight = isLandscape ? A4_WIDTH : A4_HEIGHT;
 
       const page = pdfDoc.addPage([pageWidth, pageHeight]);
 
-      // 여백을 고려한 이미지 최대 출력 영역
       const maxW = pageWidth - MARGIN * 2;
       const maxH = pageHeight - MARGIN * 2;
 
-      // 원본 비율(Aspect Ratio) 보존 계산
       const scale = Math.min(maxW / imgW, maxH / imgH);
       const drawW = imgW * scale;
       const drawH = imgH * scale;
 
-      // 가운데 정렬 (Center Fit)
       const x = (pageWidth - drawW) / 2;
       const y = (pageHeight - drawH) / 2;
 
