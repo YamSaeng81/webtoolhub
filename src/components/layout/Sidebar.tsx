@@ -3,21 +3,22 @@ import { TOOLS_REGISTRY } from '../../config/toolsRegistry';
 import { AdBanner } from '../ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import {
-  FileImage,
-  FileMinus,
-  Crop,
-  FileText,
-  Music,
-  Sparkles,
-  FileSpreadsheet,
+  Layers,
   Minimize2,
-  RefreshCw,
-  Maximize2,
   Scissors,
-  Hash,
+  FileText,
+  RotateCw,
+  ShieldCheck,
+  FileImage,
+  ScanText,
+  Crop,
+  RefreshCcw,
+  Maximize2,
+  Sparkles,
+  Music,
+  AlignLeft,
   Code,
-  GitCompare,
-  Lock,
+  FileCode,
   MessageSquare,
 } from 'lucide-react';
 import type { ToolCategory } from '../../types';
@@ -30,22 +31,25 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
   const { language, t } = useLanguage();
 
+  // 모든 툴의 아이콘 1:1 고유 렌더링 (중복 0%) ⭐
   const renderIcon = (iconName: string) => {
     switch (iconName) {
-      case 'FileImage': return <FileImage size={18} />;
-      case 'FileSpreadsheet': return <FileSpreadsheet size={18} />;
-      case 'FileMinus': return <FileMinus size={18} />;
-      case 'Crop': return <Crop size={18} />;
-      case 'FileText': return <FileText size={18} />;
-      case 'Lock': return <Lock size={18} />;
+      case 'Layers': return <Layers size={18} />;
       case 'Minimize2': return <Minimize2 size={18} />;
-      case 'RefreshCw': return <RefreshCw size={18} />;
-      case 'Maximize2': return <Maximize2 size={18} />;
-      case 'Music': return <Music size={18} />;
       case 'Scissors': return <Scissors size={18} />;
-      case 'Hash': return <Hash size={18} />;
+      case 'FileText': return <FileText size={18} />;
+      case 'RotateCw': return <RotateCw size={18} />;
+      case 'ShieldCheck': return <ShieldCheck size={18} />;
+      case 'FileImage': return <FileImage size={18} />;
+      case 'ScanText': return <ScanText size={18} />;
+      case 'Crop': return <Crop size={18} />;
+      case 'RefreshCcw': return <RefreshCcw size={18} />;
+      case 'Maximize2': return <Maximize2 size={18} />;
+      case 'Sparkles': return <Sparkles size={18} />;
+      case 'Music': return <Music size={18} />;
+      case 'AlignLeft': return <AlignLeft size={18} />;
       case 'Code': return <Code size={18} />;
-      case 'GitCompare': return <GitCompare size={18} />;
+      case 'FileCode': return <FileCode size={18} />;
       case 'MessageSquare': return <MessageSquare size={18} />;
       default: return <Sparkles size={18} />;
     }

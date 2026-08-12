@@ -4,25 +4,27 @@ import { AdBanner } from '../components/ads/AdBanner';
 import { PrivacyBadge } from '../components/common/PrivacyBadge';
 import { useLanguage } from '../context/LanguageContext';
 import {
-  FileImage,
-  FileMinus,
-  Crop,
+  Layers,
+  Minimize2,
+  Scissors,
   FileText,
-  Music,
+  RotateCw,
+  ShieldCheck,
+  FileImage,
+  ScanText,
+  Crop,
+  RefreshCcw,
+  Maximize2,
   Sparkles,
+  Music,
+  AlignLeft,
+  Code,
+  FileCode,
+  MessageSquare,
   Shield,
   Zap,
   Lock,
   ArrowRight,
-  FileSpreadsheet,
-  Minimize2,
-  RefreshCw,
-  Maximize2,
-  Scissors,
-  Hash,
-  Code,
-  GitCompare,
-  MessageSquare,
 } from 'lucide-react';
 import type { ToolCategory } from '../types';
 
@@ -43,20 +45,22 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
 
   const renderIcon = (iconName: string) => {
     switch (iconName) {
-      case 'FileImage': return <FileImage size={24} />;
-      case 'FileSpreadsheet': return <FileSpreadsheet size={24} />;
-      case 'FileMinus': return <FileMinus size={24} />;
-      case 'Crop': return <Crop size={24} />;
-      case 'FileText': return <FileText size={24} />;
-      case 'Lock': return <Lock size={24} />;
+      case 'Layers': return <Layers size={24} />;
       case 'Minimize2': return <Minimize2 size={24} />;
-      case 'RefreshCw': return <RefreshCw size={24} />;
-      case 'Maximize2': return <Maximize2 size={24} />;
-      case 'Music': return <Music size={24} />;
       case 'Scissors': return <Scissors size={24} />;
-      case 'Hash': return <Hash size={24} />;
+      case 'FileText': return <FileText size={24} />;
+      case 'RotateCw': return <RotateCw size={24} />;
+      case 'ShieldCheck': return <ShieldCheck size={24} />;
+      case 'FileImage': return <FileImage size={24} />;
+      case 'ScanText': return <ScanText size={24} />;
+      case 'Crop': return <Crop size={24} />;
+      case 'RefreshCcw': return <RefreshCcw size={24} />;
+      case 'Maximize2': return <Maximize2 size={24} />;
+      case 'Sparkles': return <Sparkles size={24} />;
+      case 'Music': return <Music size={24} />;
+      case 'AlignLeft': return <AlignLeft size={24} />;
       case 'Code': return <Code size={24} />;
-      case 'GitCompare': return <GitCompare size={24} />;
+      case 'FileCode': return <FileCode size={24} />;
       case 'MessageSquare': return <MessageSquare size={24} />;
       default: return <Sparkles size={24} />;
     }
@@ -161,7 +165,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
                     onClick={() => onNavigate(tool.path)}
                     style={{ cursor: 'pointer' }}
                   >
-                    {tool.badgeText && (
+                    {tool.isPopular && (
                       <span
                         style={{
                           position: 'absolute',
@@ -175,7 +179,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
                           borderRadius: 'var(--radius-full)',
                         }}
                       >
-                        {tool.badgeText}
+                        Popular
                       </span>
                     )}
                     <div className="tool-icon">{renderIcon(tool.iconName)}</div>
