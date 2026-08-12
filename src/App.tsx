@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
+import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Home } from './pages/Home';
 import { trackPageView } from './utils/analytics';
 
@@ -154,6 +155,9 @@ export default function App() {
       </div>
 
       <Footer onNavigate={handleNavigate} />
+
+      {/* 📱 모바일 전용 고정 하단 탭 바 & 바텀 시트 연동 ⭐ */}
+      <MobileBottomNav currentPath={currentPath} onNavigate={handleNavigate} />
     </div>
   );
 }
