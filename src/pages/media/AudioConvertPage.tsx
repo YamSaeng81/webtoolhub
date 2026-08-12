@@ -25,6 +25,14 @@ export const AudioConvertPage: React.FC = () => {
     ja: { selectTitle: '変換する音声ファイルを選択してください', targetLabel: '変換後の音声フォーマット:', btnConvert: '音声フォーマット変換を実行', doneTitle: '音声フォーマット変換完了！' },
   }[language] || { selectTitle: 'Select audio file to convert', targetLabel: 'Target Audio Format:', btnConvert: 'Convert Audio Format', doneTitle: 'Audio Conversion Completed!' };
 
+  const getOriginalFormat = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    if (ext === 'mp3') return 'mp3';
+    if (ext === 'wav') return 'wav';
+    if (ext === 'ogg') return 'ogg';
+    return ext;
+  };
+
   const handleFileSelected = (files: File[]) => {
     const selected = files[0];
     if (!selected || !selected.type.startsWith('audio/')) {
@@ -33,6 +41,11 @@ export const AudioConvertPage: React.FC = () => {
     }
     setFile(selected);
     setResultUrl(null);
+
+    // 원본 포맷과 동일하지 않은 목표 포맷으로 자동 기본 선택 ⭐
+    const orig = getOriginalFormat(selected.name);
+    if (orig === 'mp3') setTargetFormat('wav');
+    else setTargetFormat('mp3');
   };
 
   const handleConvert = async () => {
@@ -69,6 +82,8 @@ export const AudioConvertPage: React.FC = () => {
     setResultUrl(null);
     setProgress(0);
   };
+
+  const origFmt = file ? getOriginalFormat(file.name) : '';
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -116,19 +131,31 @@ export const AudioConvertPage: React.FC = () => {
             </button>
           </div>
 
+          {/* 동일한 포맷 버튼 비활성화 (Disabled) 칠하기 ⭐ */}
           <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>{labels.targetLabel}</label>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              {(['mp3', 'wav', 'ogg'] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  onClick={() => setTargetFormat(fmt)}
-                  className={targetFormat === fmt ? 'btn-primary' : 'btn-secondary'}
-                  style={{ padding: '0.5rem 1.25rem', fontSize: '0.9rem' }}
-                >
-                  .{fmt.toUpperCase()}
-                </button>
-              ))}
+              {(['mp3', 'wav', 'ogg'] as const).map((fmt) => {
+                const isSame = origFmt === fmt;
+                return (
+                  <button
+                    key={fmt}
+                    onClick={() => !isSame && setTargetFormat(fmt)}
+                    disabled={isSame}
+                    className={targetFormat === fmt ? 'btn-primary' : 'btn-secondary'}
+                    style={{
+                      padding: '0.5rem 1.25rem',
+                      fontSize: '0.9rem',
+                      opacity: isSame ? 0.4 : 1,
+                      cursor: isSame ? 'not-allowed' : 'pointer',
+                      border: isSame ? '1px dashed var(--border-color)' : undefined,
+                    }}
+                    title={isSame ? '현재 업로드된 원본과 동일한 포맷입니다.' : undefined}
+                  >
+                    .{fmt.toUpperCase()} {isSame && '(현재 원본)'}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

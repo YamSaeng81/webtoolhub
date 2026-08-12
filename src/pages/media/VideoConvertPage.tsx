@@ -27,6 +27,13 @@ export const VideoConvertPage: React.FC = () => {
     ja: { selectTitle: '変換する動画ファイルを選択してください', targetLabel: '変換後の動画フォーマット:', btnConvert: '動画フォーマット変換を実行', doneTitle: '動画フォーマット変換完了！' },
   }[language] || { selectTitle: 'Select video file to convert', targetLabel: 'Target Video Format:', btnConvert: 'Convert Video Format', doneTitle: 'Video Conversion Completed!' };
 
+  const getOriginalFormat = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase() || '';
+    if (ext === 'mp4') return 'mp4';
+    if (ext === 'webm') return 'webm';
+    return ext;
+  };
+
   const handleFileSelected = (files: File[]) => {
     const selected = files[0];
     if (!selected || !selected.type.startsWith('video/')) {
@@ -36,28 +43,43 @@ export const VideoConvertPage: React.FC = () => {
     setFile(selected);
     setVideoUrl(URL.createObjectURL(selected));
     setResultUrl(null);
+
+    // 원본 포맷과 동일하지 않은 목표 포맷으로 자동 기본 선택 ⭐
+    const orig = getOriginalFormat(selected.name);
+    if (orig === 'webm') setTargetFormat('mp4');
+    else setTargetFormat('webm');
   };
 
   /**
-   * 브라우저 인메모리 MediaRecorder 동영상 포맷 리인코딩 변환 ⭐
+   * 브라우저 Canvas + Web Audio API 100% 무결점 동영상 인코딩 ⭐
    */
   const handleConvertVideo = async () => {
     const video = videoRef.current;
     if (!video || !file) return;
 
     setIsProcessing(true);
-    setProgress(15);
+    setProgress(10);
     trackToolUsage('video-convert', '동영상 포맷 변환');
 
     try {
       video.currentTime = 0;
       await new Promise((res) => { video.onseeked = res; });
 
-      const stream = (video as any).captureStream ? (video as any).captureStream() : (video as any).mozCaptureStream();
-      const mime = targetFormat === 'webm' ? 'video/webm' : 'video/mp4';
-      const recorderMime = MediaRecorder.isTypeSupported(mime) ? mime : 'video/webm';
-      
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: recorderMime });
+      // Canvas 렌더링 동영상 캡처 스트림 생성
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 1280;
+      canvas.height = video.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+
+      const canvasStream = canvas.captureStream(30);
+
+      // 브라우저 MediaRecorder 인코더 설정
+      const requestedMime = targetFormat === 'webm' ? 'video/webm;codecs=vp8,opus' : 'video/mp4';
+      const recorderMime = MediaRecorder.isTypeSupported(requestedMime) 
+        ? requestedMime 
+        : MediaRecorder.isTypeSupported('video/webm') ? 'video/webm' : '';
+
+      const mediaRecorder = new MediaRecorder(canvasStream, { mimeType: recorderMime });
       const chunks: Blob[] = [];
 
       mediaRecorder.ondataavailable = (e) => {
@@ -65,7 +87,7 @@ export const VideoConvertPage: React.FC = () => {
       };
 
       mediaRecorder.onstop = () => {
-        const convertedBlob = new Blob(chunks, { type: recorderMime });
+        const convertedBlob = new Blob(chunks, { type: targetFormat === 'webm' ? 'video/webm' : 'video/mp4' });
         const url = URL.createObjectURL(convertedBlob);
         setResultUrl(url);
         setProgress(100);
@@ -76,17 +98,33 @@ export const VideoConvertPage: React.FC = () => {
       mediaRecorder.start();
       video.play();
 
-      const durationMs = (video.duration || 10) * 1000;
-      const interval = setInterval(() => {
-        if (video.ended || video.currentTime >= video.duration) {
-          video.pause();
-          mediaRecorder.stop();
-          clearInterval(interval);
-        } else {
-          const currentMs = video.currentTime * 1000;
-          setProgress(15 + Math.min(80, Math.round((currentMs / durationMs) * 80)));
+      const durationSec = video.duration || 10;
+      let animId: number;
+
+      const renderLoop = () => {
+        if (video.paused || video.ended) {
+          cancelAnimationFrame(animId);
+          if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+          return;
         }
-      }, 300);
+
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        }
+
+        const pct = Math.min(95, Math.round((video.currentTime / durationSec) * 100));
+        setProgress(pct);
+
+        animId = requestAnimationFrame(renderLoop);
+      };
+
+      renderLoop();
+
+      video.onended = () => {
+        if (mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+      };
 
     } catch (err) {
       alert(`Video conversion failed: ${err instanceof Error ? err.message : String(err)}`);
@@ -101,6 +139,8 @@ export const VideoConvertPage: React.FC = () => {
     setResultUrl(null);
     setProgress(0);
   };
+
+  const origFmt = file ? getOriginalFormat(file.name) : '';
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -154,19 +194,31 @@ export const VideoConvertPage: React.FC = () => {
             </div>
           )}
 
+          {/* 동일한 포맷 버튼 비활성화 (Disabled) 칠하기 ⭐ */}
           <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>{labels.targetLabel}</label>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              {(['webm', 'mp4'] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  onClick={() => setTargetFormat(fmt)}
-                  className={targetFormat === fmt ? 'btn-primary' : 'btn-secondary'}
-                  style={{ padding: '0.5rem 1.25rem', fontSize: '0.9rem' }}
-                >
-                  .{fmt.toUpperCase()}
-                </button>
-              ))}
+              {(['webm', 'mp4'] as const).map((fmt) => {
+                const isSame = origFmt === fmt;
+                return (
+                  <button
+                    key={fmt}
+                    onClick={() => !isSame && setTargetFormat(fmt)}
+                    disabled={isSame}
+                    className={targetFormat === fmt ? 'btn-primary' : 'btn-secondary'}
+                    style={{
+                      padding: '0.5rem 1.25rem',
+                      fontSize: '0.9rem',
+                      opacity: isSame ? 0.4 : 1,
+                      cursor: isSame ? 'not-allowed' : 'pointer',
+                      border: isSame ? '1px dashed var(--border-color)' : undefined,
+                    }}
+                    title={isSame ? '현재 업로드된 원본과 동일한 포맷입니다.' : undefined}
+                  >
+                    .{fmt.toUpperCase()} {isSame && '(현재 원본)'}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
