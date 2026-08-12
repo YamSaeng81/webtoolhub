@@ -1,4 +1,4 @@
-import { PDFDocument, PDFName, PDFHexString } from 'pdf-lib';
+import { PDFDocument, PDFName, PDFHexString, PDFArray } from 'pdf-lib';
 
 export type PageSizeMode = 'a4' | 'original';
 
@@ -145,6 +145,20 @@ export async function cropPdfMargins(
 }
 
 /**
+ * 간단한 문자열 해시 함수
+ */
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0;
+  }
+  const hex = Math.abs(hash).toString(16).padStart(32, '0').slice(0, 32);
+  return hex.toUpperCase();
+}
+
+/**
  * PDF 열람 비밀번호(Open Password) 강제 암호화 주입 함수 ⭐
  */
 export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): Promise<Uint8Array> {
@@ -154,23 +168,31 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
 
   const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
 
-  pdfDoc.setTitle('Protected Password Document');
+  pdfDoc.setTitle('Protected Document');
   pdfDoc.setAuthor('WebToolHub Security Engine');
 
   const context = pdfDoc.context;
+  const pwdHash = simpleHash(userPassword.trim());
 
-  // Acrobat, Chrome, Edge 뷰어 암호 팝업 출력을 위한 Standard Encryption Dictionary
+  // Standard Encryption Dictionary
   const encryptDict = context.obj({
     Filter: 'Standard',
+    SubFilter: 'Standard',
     V: 2,
     R: 3,
-    O: PDFHexString.of('28BF4E5E4E758A4164004E56FFFA01082E00B6D0683E802F0CA9FE6453697A92'),
-    U: PDFHexString.of('28BF4E5E4E758A4164004E56FFFA01082E00B6D0683E802F0CA9FE6453697A92'),
+    O: PDFHexString.of(pwdHash),
+    U: PDFHexString.of(pwdHash),
     P: -4,
+    Length: 128,
   });
 
   const encryptRef = context.register(encryptDict);
   pdfDoc.catalog.set(PDFName.of('Encrypt'), encryptRef);
+
+  const idArray = PDFArray.withContext(context);
+  idArray.push(PDFHexString.of(pwdHash));
+  idArray.push(PDFHexString.of(pwdHash));
+  pdfDoc.catalog.set(PDFName.of('ID'), idArray);
 
   return await pdfDoc.save({ useObjectStreams: false });
 }
@@ -184,15 +206,12 @@ export async function unlockPdf(pdfBuffer: ArrayBuffer, currentPassword: string)
   }
 
   try {
-    // 1. 기존 암호로 해독 로딩
     const srcDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
     
-    // 2. 새로운 무암호 PDF 생성하여 모든 페이지 복사
     const unlockedDoc = await PDFDocument.create();
     const copiedPages = await unlockedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
     copiedPages.forEach((page) => unlockedDoc.addPage(page));
 
-    // 3. Encrypt 객체 제거 후 깨끗한 상태로 저장
     return await unlockedDoc.save({ useObjectStreams: true });
   } catch (err) {
     throw new Error('PDF 암호 해제에 실패했습니다. 암호가 일치하는지 확인해 주세요.');
