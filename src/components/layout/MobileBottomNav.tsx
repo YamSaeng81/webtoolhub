@@ -62,13 +62,22 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, o
     }
   };
 
+  // 5개 국어 1:1 동적 연동 라벨 맵 ⭐
+  const tabLabels = {
+    ko: { home: '홈', pdf: 'PDF', image: '이미지', media: '미디어', text: '텍스트', community: '소통' },
+    en: { home: 'Home', pdf: 'PDF', image: 'Image', media: 'Media', text: 'Text', community: 'Feedback' },
+    es: { home: 'Inicio', pdf: 'PDF', image: 'Imagen', media: 'Medios', text: 'Texto', community: 'Foro' },
+    zh: { home: '首页', pdf: 'PDF', image: '图片', media: '媒体', text: '文本', community: '反馈' },
+    ja: { home: 'ホーム', pdf: 'PDF', image: '画像', media: 'メディア', text: 'テキスト', community: '掲示板' },
+  }[language] || { home: 'Home', pdf: 'PDF', image: 'Image', media: 'Media', text: 'Text', community: 'Feedback' };
+
   const navItems: { key: string; label: string; icon: React.ReactNode; category?: ToolCategory; path?: string }[] = [
-    { key: 'home', label: '홈', icon: <Home size={20} />, path: '/' },
-    { key: 'pdf', label: 'PDF', icon: <FileText size={20} />, category: 'pdf' },
-    { key: 'image', label: '이미지', icon: <ImageIcon size={20} />, category: 'image' },
-    { key: 'media', label: '미디어', icon: <Film size={20} />, category: 'media' },
-    { key: 'text', label: '텍스트', icon: <Type size={20} />, category: 'text' },
-    { key: 'community', label: '소통', icon: <MessageSquare size={20} />, path: '/community/feedback' },
+    { key: 'home', label: tabLabels.home, icon: <Home size={20} />, path: '/' },
+    { key: 'pdf', label: tabLabels.pdf, icon: <FileText size={20} />, category: 'pdf' },
+    { key: 'image', label: tabLabels.image, icon: <ImageIcon size={20} />, category: 'image' },
+    { key: 'media', label: tabLabels.media, icon: <Film size={20} />, category: 'media' },
+    { key: 'text', label: tabLabels.text, icon: <Type size={20} />, category: 'text' },
+    { key: 'community', label: tabLabels.community, icon: <MessageSquare size={20} />, path: '/community/feedback' },
   ];
 
   const categoryTitles = {
@@ -131,7 +140,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, o
             
             <div className="bottom-sheet-header">
               <h3 className="bottom-sheet-title">
-                {categoryTitles[activeBottomSheet]} <span className="sub-count">({activeCategoryTools.length}개 툴)</span>
+                {categoryTitles[activeBottomSheet]} <span className="sub-count">({activeCategoryTools.length})</span>
               </h3>
               <button className="bottom-sheet-close" onClick={() => setActiveBottomSheet(null)}>
                 <X size={20} />
