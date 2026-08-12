@@ -1,7 +1,10 @@
 /**
- * WebToolHub 전용 Analytics & 툴 사용 통계 트래커
- * - Google Analytics 4 (GA4) 이벤트 연동
- * - 로컬/서버 자체 통계 집계 (일별 순 방문자 수 UV, 총 페이지뷰 PV, 15개 툴별 사용 횟수 랭킹)
+ * WebToolHub 전용 고도화 Analytics & 관리자 통계 트래커
+ * - Google Analytics 4 (GA4) 연동
+ * - 접속 국가/도시 GeoIP 분석 (국기, 국가명, 도시)
+ * - 접속 디바이스/브라우저/OS 분석 (Desktop / Mobile / Tablet)
+ * - 최근 7일 일자별 순 방문자(UV) & 페이지뷰(PV) 히스토리
+ * - 15개 툴별 실시간 사용량 랭킹 & 비율
  */
 
 export interface ToolUsageStat {
@@ -11,13 +14,37 @@ export interface ToolUsageStat {
   lastUsedAt: string;
 }
 
+export interface GeoStat {
+  countryCode: string;
+  countryName: string;
+  city: string;
+  count: number;
+  flag: string;
+}
+
+export interface DeviceStat {
+  deviceType: 'Desktop' | 'Mobile' | 'Tablet';
+  browser: string;
+  os: string;
+  count: number;
+}
+
+export interface DailyVisitorRecord {
+  date: string;
+  uv: number;
+  pv: number;
+}
+
 export interface AnalyticsSummary {
   totalPageviews: number;
   todayVisitors: number;
   toolStats: Record<string, ToolUsageStat>;
+  geoStats: Record<string, GeoStat>;
+  deviceStats: Record<string, DeviceStat>;
+  dailyHistory: Record<string, DailyVisitorRecord>;
 }
 
-const STORAGE_KEY = 'webtoolhub_analytics_v2';
+const STORAGE_KEY = 'webtoolhub_analytics_v3';
 
 declare global {
   interface Window {
@@ -27,11 +54,36 @@ declare global {
 }
 
 /**
+ * 디바이스 & 브라우저 정보 추출
+ */
+function getDeviceInfo(): { deviceType: 'Desktop' | 'Mobile' | 'Tablet'; browser: string; os: string } {
+  if (typeof window === 'undefined') return { deviceType: 'Desktop', browser: 'Chrome', os: 'Windows' };
+
+  const ua = navigator.userAgent;
+  let deviceType: 'Desktop' | 'Mobile' | 'Tablet' = 'Desktop';
+  if (/iPad|Android(?!.*Mobile)|Tablet/i.test(ua)) deviceType = 'Tablet';
+  else if (/Mobile|iPhone|Android/i.test(ua)) deviceType = 'Mobile';
+
+  let browser = 'Chrome';
+  if (/Edg/i.test(ua)) browser = 'Edge';
+  else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+  else if (/Firefox/i.test(ua)) browser = 'Firefox';
+
+  let os = 'Windows';
+  if (/Macintosh|Mac OS X/i.test(ua)) os = 'macOS';
+  else if (/iPhone|iPad|iPod/i.test(ua)) os = 'iOS';
+  else if (/Android/i.test(ua)) os = 'Android';
+  else if (/Linux/i.test(ua)) os = 'Linux';
+
+  return { deviceType, browser, os };
+}
+
+/**
  * 초기 통계 데이터 로드
  */
 function loadAnalyticsData(): AnalyticsSummary {
   if (typeof window === 'undefined') {
-    return { totalPageviews: 0, todayVisitors: 0, toolStats: {} };
+    return { totalPageviews: 0, todayVisitors: 0, toolStats: {}, geoStats: {}, deviceStats: {}, dailyHistory: {} };
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -40,6 +92,10 @@ function loadAnalyticsData(): AnalyticsSummary {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
+      if (!parsed.geoStats) parsed.geoStats = {};
+      if (!parsed.deviceStats) parsed.deviceStats = {};
+      if (!parsed.dailyHistory) parsed.dailyHistory = {};
+
       // 날짜가 지나면 오늘 순 방문자 수 리셋
       if (parsed.lastDate !== todayStr) {
         parsed.todayVisitors = 0;
@@ -47,7 +103,7 @@ function loadAnalyticsData(): AnalyticsSummary {
       }
       return parsed;
     } catch (e) {
-      // 파싱 실패시 기본값
+      // 기본값 반환
     }
   }
 
@@ -55,6 +111,9 @@ function loadAnalyticsData(): AnalyticsSummary {
     totalPageviews: 0,
     todayVisitors: 0,
     toolStats: {},
+    geoStats: {},
+    deviceStats: {},
+    dailyHistory: {},
   };
 }
 
@@ -68,44 +127,99 @@ function saveAnalyticsData(data: AnalyticsSummary) {
 }
 
 /**
- * 1. 페이지 뷰 (PV) & 순 방문자 수 (UV) 추적 (중복 방문 100% 방지 ⭐)
+ * 1. 페이지 뷰 (PV) & 순 방문자 수 (UV) & 접속 지오/기기 추적 ⭐
  */
 export function trackPageView(path: string) {
   const data = loadAnalyticsData();
   const todayStr = new Date().toISOString().split('T')[0];
   const visitSessionKey = `webtoolhub_uv_${todayStr}`;
 
-  // 페이지 뷰(PV)는 누적 +1
+  // 페이지 뷰(PV) 카운트
   data.totalPageviews = (data.totalPageviews || 0) + 1;
 
-  // 순 방문자 수(UV)는 동일 사용자/브라우저 당 오늘 딱 1번만 +1 ⭐
+  // 일자별 히스토리 기록
+  if (!data.dailyHistory[todayStr]) {
+    data.dailyHistory[todayStr] = { date: todayStr, uv: 0, pv: 0 };
+  }
+  data.dailyHistory[todayStr].pv += 1;
+
+  // 순 방문자 수(UV) 중복 방지 카운트
   if (!localStorage.getItem(visitSessionKey)) {
     data.todayVisitors = (data.todayVisitors || 0) + 1;
+    data.dailyHistory[todayStr].uv += 1;
     localStorage.setItem(visitSessionKey, 'visited');
+
+    // 디바이스 통계 기록
+    const dev = getDeviceInfo();
+    const devKey = `${dev.deviceType}_${dev.browser}`;
+    if (!data.deviceStats[devKey]) {
+      data.deviceStats[devKey] = { deviceType: dev.deviceType, browser: dev.browser, os: dev.os, count: 0 };
+    }
+    data.deviceStats[devKey].count += 1;
+
+    // 접속 GeoIP 분석 비동기 캡처 ⭐
+    fetchGeoLocation((geo) => {
+      const curData = loadAnalyticsData();
+      if (!curData.geoStats) curData.geoStats = {};
+      const geoKey = geo.countryCode || 'KR';
+      if (!curData.geoStats[geoKey]) {
+        curData.geoStats[geoKey] = {
+          countryCode: geo.countryCode,
+          countryName: geo.countryName,
+          city: geo.city,
+          count: 0,
+          flag: geo.flag,
+        };
+      }
+      curData.geoStats[geoKey].count += 1;
+      saveAnalyticsData(curData);
+    });
   }
 
   saveAnalyticsData(data);
 
   // GA4 연동
   if (window.gtag) {
-    window.gtag('event', 'page_view', {
-      page_path: path,
-    });
+    window.gtag('event', 'page_view', { page_path: path });
   }
 }
 
 /**
- * 2. 툴 사용 횟수 추적 (변환, OCR, 압축 실행 시 자동 실행)
- * @param toolId 툴 식별자 (예: 'pdf-ocr', 'image-compress')
- * @param toolName 툴 이름
+ * 무료 GeoIP API 캡처 함수 (국가코드, 국기, 도시)
+ */
+function fetchGeoLocation(callback: (geo: { countryCode: string; countryName: string; city: string; flag: string }) => void) {
+  fetch('https://ipapi.co/json/')
+    .then((res) => res.json())
+    .then((data) => {
+      const countryCode = data.country_code || 'KR';
+      const countryName = data.country_name || '대한민국';
+      const city = data.city || 'Seoul';
+      const flag = getFlagEmoji(countryCode);
+      callback({ countryCode, countryName, city, flag });
+    })
+    .catch(() => {
+      // 기본 대한민국 처리
+      callback({ countryCode: 'KR', countryName: '대한민국', city: 'Seoul', flag: '🇰🇷' });
+    });
+}
+
+function getFlagEmoji(countryCode: string) {
+  if (countryCode === 'KR') return '🇰🇷';
+  if (countryCode === 'US') return '🇺🇸';
+  if (countryCode === 'JP') return '🇯🇵';
+  if (countryCode === 'CN') return '🇨🇳';
+  if (countryCode === 'ES') return '🇪🇸';
+  return '🌐';
+}
+
+/**
+ * 2. 툴 사용 횟수 추적
  */
 export function trackToolUsage(toolId: string, toolName: string) {
   const data = loadAnalyticsData();
   const todayStr = new Date().toISOString().split('T')[0];
 
-  if (!data.toolStats) {
-    data.toolStats = {};
-  }
+  if (!data.toolStats) data.toolStats = {};
 
   const current = data.toolStats[toolId] || {
     toolId,
@@ -120,25 +234,20 @@ export function trackToolUsage(toolId: string, toolName: string) {
 
   saveAnalyticsData(data);
 
-  // GA4 커스텀 이벤트 전송
   if (window.gtag) {
-    window.gtag('event', 'use_tool', {
-      tool_id: toolId,
-      tool_name: toolName,
-    });
+    window.gtag('event', 'use_tool', { tool_id: toolId, tool_name: toolName });
   }
 }
 
 /**
- * 3. 관리자 통계 수치 반환
+ * 3. 관리자 통계 수치 전체 반환
  */
 export function getAnalyticsSummary(): AnalyticsSummary {
   return loadAnalyticsData();
 }
 
 /**
- * Google Analytics 4 (GA4) 스크립트 동적 주입 함수
- * @param measurementId GA4 측정 ID (예: 'G-XXXXXXXXXX')
+ * GA4 동적 주입
  */
 export function initGoogleAnalytics(measurementId: string) {
   if (!measurementId || typeof window === 'undefined') return;
@@ -149,9 +258,7 @@ export function initGoogleAnalytics(measurementId: string) {
   document.head.appendChild(script1);
 
   window.dataLayer = window.dataLayer || [];
-  window.gtag = function () {
-    window.dataLayer?.push(arguments);
-  };
+  window.gtag = function () { window.dataLayer?.push(arguments); };
   window.gtag('js', new Date());
   window.gtag('config', measurementId);
 }
