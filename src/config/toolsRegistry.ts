@@ -1,7 +1,8 @@
 import type { ToolItem } from '../types';
 
 export const ALL_TOOLS: ToolItem[] = [
-  // 📄 PDF Tools (신규 3종 포함 총 9종) ⭐
+  // 📄 PDF Tools (사용자 지정 순서 총 9종) ⭐
+  // 1. PDF 합치기 (pdf/merge)
   {
     id: 'pdf-merge',
     category: 'pdf',
@@ -26,6 +27,8 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf merge', 'pdf 합치기', 'pdf 병합'],
   },
+
+  // 2. PDF 용량 줄이기 (pdf/compress)
   {
     id: 'pdf-compress',
     category: 'pdf',
@@ -50,6 +53,59 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf compress', 'pdf 용량 줄이기', 'pdf 압축'],
   },
+
+  // 3. PDF 페이지 추출 (pdf/extract)
+  {
+    id: 'extract-pdf',
+    category: 'pdf',
+    title: 'PDF 페이지 추출',
+    description: '시각적 썸네일 미리보기를 통해 원하는 페이지를 클릭하여 추출합니다.',
+    titleMap: {
+      ko: 'PDF 페이지 추출',
+      en: 'Extract PDF Pages',
+      es: 'Extraer Páginas PDF',
+      zh: '提取 PDF 页面',
+      ja: 'PDFページ抽出',
+    },
+    descriptionMap: {
+      ko: '시각적 썸네일 미리보기를 통해 원하는 페이지를 클릭하여 추출합니다.',
+      en: 'Extract specific pages from PDF with visual thumbnail preview.',
+      es: 'Extraiga páginas específicas de un PDF con vista previa visual.',
+      zh: '通过可视化缩略图预览提取 PDF 中的特定页面。',
+      ja: '視覚的なサムネイルプレビューで目的のページを抽出します。',
+    },
+    iconName: 'Scissors',
+    path: '/pdf/extract',
+    metaKeywords: ['extract pdf', 'pdf 페이지 추출', 'pdf 떼어내기'],
+  },
+
+  // 4. 이미지를 PDF로 변환 (pdf/image-to-pdf)
+  {
+    id: 'image-to-pdf',
+    category: 'pdf',
+    title: '이미지를 PDF로 변환',
+    description: 'JPG, PNG, WEBP 등의 사진 파일들을 하나의 고화질 PDF 파일로 합칩니다.',
+    titleMap: {
+      ko: '이미지를 PDF로 변환',
+      en: 'Convert Images to PDF',
+      es: 'Convertir Imágenes a PDF',
+      zh: '将图像转换为 PDF',
+      ja: '画像をPDFに変換',
+    },
+    descriptionMap: {
+      ko: 'JPG, PNG, WEBP 등의 사진 파일들을 하나의 고화질 PDF 파일로 합칩니다.',
+      en: 'Combine JPG, PNG, WEBP images into a single PDF.',
+      es: 'Combine imágenes JPG, PNG, WEBP en un solo PDF.',
+      zh: '将 JPG、PNG、WEBP 等照片合并为一个高质量 PDF。',
+      ja: 'JPG、PNG、WEBPなどの画像を1つのPDFファイルに結合します。',
+    },
+    iconName: 'FileText',
+    path: '/pdf/image-to-pdf',
+    isPopular: true,
+    metaKeywords: ['image to pdf', '이미지 pdf 변환', 'jpg pdf 변환'],
+  },
+
+  // 5. PDF 페이지 회전 (pdf/rotate)
   {
     id: 'pdf-rotate',
     category: 'pdf',
@@ -74,30 +130,33 @@ export const ALL_TOOLS: ToolItem[] = [
     isNew: true,
     metaKeywords: ['pdf rotate', 'pdf 페이지 회전', 'pdf 돌리기'],
   },
+
+  // 6. PDF 암호 설정 & 해제 (pdf/protect)
   {
-    id: 'image-to-pdf',
+    id: 'pdf-protect',
     category: 'pdf',
-    title: '이미지를 PDF로 변환',
-    description: 'JPG, PNG, WEBP 등의 사진 파일들을 하나의 고화질 PDF 파일로 합칩니다.',
+    title: 'PDF 암호 설정 & 해제',
+    description: 'PDF 열람 암호를 강제 설정하거나, 기존 암호를 해제(Unlock)하여 무암호로 다운로드합니다.',
     titleMap: {
-      ko: '이미지를 PDF로 변환',
-      en: 'Convert Images to PDF',
-      es: 'Convertir Imágenes a PDF',
-      zh: '将图像转换为 PDF',
-      ja: '画像をPDFに変換',
+      ko: 'PDF 암호 설정 & 해제',
+      en: 'Protect & Unlock PDF Password',
+      es: 'Proteger y Desbloquear PDF',
+      zh: 'PDF 加密与解密',
+      ja: 'PDFパスワード設定＆解除',
     },
     descriptionMap: {
-      ko: 'JPG, PNG, WEBP 등의 사진 파일들을 하나의 고화질 PDF 파일로 합칩니다.',
-      en: 'Combine JPG, PNG, WEBP images into a single PDF.',
-      es: 'Combine imágenes JPG, PNG, WEBP en un solo PDF.',
-      zh: '将 JPG、PNG、WEBP 等照片合并为一个高质量 PDF。',
-      ja: 'JPG、PNG、WEBPなどの画像を1つのPDFファイル에 結合します。',
+      ko: 'PDF 열람 암호를 강제 설정하거나, 기존 암호를 해제(Unlock)하여 무암호로 다운로드합니다.',
+      en: 'Set password protection or unlock existing PDF passwords easily.',
+      es: 'Establezca protección o desbloquee contraseñas de PDF existentes.',
+      zh: '设置 PDF 打开密码或轻松解密现有的 PDF 密码。',
+      ja: 'PDFのパスワード設定および既存パスワードの解除(Unlock)に対応。',
     },
-    iconName: 'FileText',
-    path: '/pdf/image-to-pdf',
-    isPopular: true,
-    metaKeywords: ['image to pdf', '이미지 pdf 변환', 'jpg pdf 변환'],
+    iconName: 'ShieldCheck',
+    path: '/pdf/protect',
+    metaKeywords: ['pdf protect', 'pdf 암호 설정', 'pdf 비밀번호 해제'],
   },
+
+  // 7. PDF를 이미지로 변환 (pdf/pdf-to-image)
   {
     id: 'pdf-to-image',
     category: 'pdf',
@@ -108,7 +167,7 @@ export const ALL_TOOLS: ToolItem[] = [
       en: 'Convert PDF to Images',
       es: 'Convertir PDF a Imágenes',
       zh: '将 PDF 转换为图像',
-      ja: 'PDF를 画像에 変換',
+      ja: 'PDFを画像に変換',
     },
     descriptionMap: {
       ko: 'PDF의 각 페이지를 고화질 PNG 이미지로 변환하고 ZIP 다운로드를 지원합니다.',
@@ -121,52 +180,8 @@ export const ALL_TOOLS: ToolItem[] = [
     path: '/pdf/pdf-to-image',
     metaKeywords: ['pdf to image', 'pdf 이미지 변환', 'pdf png 변환'],
   },
-  {
-    id: 'extract-pdf',
-    category: 'pdf',
-    title: 'PDF 페이지 추출',
-    description: '시각적 썸네일 미리보기를 통해 원하는 페이지를 클릭하여 추출합니다.',
-    titleMap: {
-      ko: 'PDF 페이지 추출',
-      en: 'Extract PDF Pages',
-      es: 'Extraer Páginas PDF',
-      zh: '提取 PDF 页面',
-      ja: 'PDFページ抽出',
-    },
-    descriptionMap: {
-      ko: '시각적 썸네일 미리보기를 통해 원하는 페이지를 클릭하여 추출합니다.',
-      en: 'Extract specific pages from PDF with visual thumbnail preview.',
-      es: 'Extraiga páginas específicas de un PDF con vista previa visual.',
-      zh: '通过可视化缩略图预览提取 PDF 中的特定页面。',
-      ja: '視覚的なサムネイルプレビューで目的のページを抽出します。',
-    },
-    iconName: 'Scissors',
-    path: '/pdf/extract',
-    metaKeywords: ['extract pdf', 'pdf 페이지 추출', 'pdf 떼어내기'],
-  },
-  {
-    id: 'crop-pdf',
-    category: 'pdf',
-    title: 'PDF 여백 자르기',
-    description: '1페이지 실시간 미리보기 캔버스로 잘라낼 여백을 직관적으로 확인하며 자릅니다.',
-    titleMap: {
-      ko: 'PDF 여백 자르기',
-      en: 'Crop PDF Margins',
-      es: 'Recortar Márgenes PDF',
-      zh: '裁剪 PDF 边距',
-      ja: 'PDF余白トリミング',
-    },
-    descriptionMap: {
-      ko: '1페이지 실시간 미리보기 캔버스로 잘라낼 여백을 직관적으로 확인하며 자릅니다.',
-      en: 'Crop PDF margins with interactive 1-page live preview.',
-      es: 'Recorte márgenes de PDF con vista previa interactiva.',
-      zh: '通过单页实时预览直观检查并裁剪 PDF 边距。',
-      ja: '1ページリアルタイムプレビューでトリミング範囲を確認してトリミング。',
-    },
-    iconName: 'Crop',
-    path: '/pdf/crop',
-    metaKeywords: ['crop pdf', 'pdf 여백 자르기', 'pdf 크롭'],
-  },
+
+  // 8. PDF & 이미지 OCR 텍스트 추출 (pdf/ocr)
   {
     id: 'ocr-pdf',
     category: 'pdf',
@@ -191,28 +206,30 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf ocr', 'pdf 글자 추출', '검색 가능한 pdf'],
   },
+
+  // 9. PDF 여백 자르기 (pdf/crop)
   {
-    id: 'pdf-protect',
+    id: 'crop-pdf',
     category: 'pdf',
-    title: 'PDF 암호 설정 & 해제',
-    description: 'PDF 열람 암호를 강제 설정하거나, 기존 암호를 해제(Unlock)하여 무암호로 다운로드합니다.',
+    title: 'PDF 여백 자르기',
+    description: '1페이지 실시간 미리보기 캔버스로 잘라낼 여백을 직관적으로 확인하며 자릅니다.',
     titleMap: {
-      ko: 'PDF 암호 설정 & 해제',
-      en: 'Protect & Unlock PDF Password',
-      es: 'Proteger y Desbloquear PDF',
-      zh: 'PDF 加密与解密',
-      ja: 'PDFパスワード設定＆解除',
+      ko: 'PDF 여백 자르기',
+      en: 'Crop PDF Margins',
+      es: 'Recortar Márgenes PDF',
+      zh: '裁剪 PDF 边距',
+      ja: 'PDF余白トリミング',
     },
     descriptionMap: {
-      ko: 'PDF 열람 암호를 강제 설정하거나, 기존 암호를 해제(Unlock)하여 무암호로 다운로드합니다.',
-      en: 'Set password protection or unlock existing PDF passwords easily.',
-      es: 'Establezca protección o desbloquee contraseñas de PDF existentes.',
-      zh: '设置 PDF 打开密码或轻松解密现有的 PDF 密码。',
-      ja: 'PDFのパスワード設定および既存パスワードの解除(Unlock)に対応。',
+      ko: '1페이지 실시간 미리보기 캔버스로 잘라낼 여백을 직관적으로 확인하며 자릅니다.',
+      en: 'Crop PDF margins with interactive 1-page live preview.',
+      es: 'Recorte márgenes de PDF con vista previa interactiva.',
+      zh: '通过单页实时预览直观检查并裁剪 PDF 边距。',
+      ja: '1ページリアルタイムプレビューでトリミング範囲を確認してトリミング。',
     },
-    iconName: 'ShieldCheck',
-    path: '/pdf/protect',
-    metaKeywords: ['pdf protect', 'pdf 암호 설정', 'pdf 비밀번호 해제'],
+    iconName: 'Crop',
+    path: '/pdf/crop',
+    metaKeywords: ['crop pdf', 'pdf 여백 자르기', 'pdf 크롭'],
   },
 
   // 🖼️ IMAGE Tools (총 4종)
@@ -421,7 +438,7 @@ export const ALL_TOOLS: ToolItem[] = [
       en: 'Compare two text strings and highlight added/removed line differences.',
       es: 'Compare dos textos y resalte las diferencias de líneas agregadas/eliminadas.',
       zh: '对比两段文本并以颜色高亮高亮显示增加与删除的差异。',
-      ja: '2つのテキストの差異(追加・削除部分)를 ハイライト比較。',
+      ja: '2つのテキストの差異(追加・削除部分)をハイライト比較。',
     },
     iconName: 'FileCode',
     path: '/text/diff',
