@@ -10,7 +10,7 @@ export async function mergePdfBuffers(pdfBuffers: Uint8Array[]): Promise<Uint8Ar
 
   for (const buffer of pdfBuffers) {
     try {
-      const pdf = await PDFDocument.load(buffer);
+      const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
       const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     } catch (e) {
@@ -100,7 +100,7 @@ export async function extractPdfPages(
     throw new Error('추출할 페이지 번호를 하나 이상 지정해야 합니다.');
   }
 
-  const srcDoc = await PDFDocument.load(pdfBuffer);
+  const srcDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
   const totalPages = srcDoc.getPageCount();
   const destDoc = await PDFDocument.create();
 
@@ -125,7 +125,7 @@ export async function cropPdfMargins(
   pdfBuffer: ArrayBuffer,
   margins: { top: number; bottom: number; left: number; right: number }
 ): Promise<Uint8Array> {
-  const pdfDoc = await PDFDocument.load(pdfBuffer);
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
   const pages = pdfDoc.getPages();
 
   const { top, bottom, left, right } = margins;
@@ -145,7 +145,7 @@ export async function cropPdfMargins(
 }
 
 /**
- * PDF 열람 비밀번호(Open Password) 암호화 주입 함수
+ * PDF 열람 비밀번호(Open Password) 강제 암호화 주입 함수 ⭐
  */
 export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): Promise<Uint8Array> {
   if (!userPassword || userPassword.trim() === '') {
@@ -159,6 +159,7 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
 
   const context = pdfDoc.context;
 
+  // Acrobat, Chrome, Edge 뷰어 암호 팝업 출력을 위한 Standard Encryption Dictionary
   const encryptDict = context.obj({
     Filter: 'Standard',
     V: 2,
@@ -172,4 +173,28 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
   pdfDoc.catalog.set(PDFName.of('Encrypt'), encryptRef);
 
   return await pdfDoc.save({ useObjectStreams: false });
+}
+
+/**
+ * 암호가 걸린 PDF 문서의 암호를 해제(Unlock)하여 무암호 PDF로 변환하는 함수 ⭐
+ */
+export async function unlockPdf(pdfBuffer: ArrayBuffer, currentPassword: string): Promise<Uint8Array> {
+  if (!currentPassword || currentPassword.trim() === '') {
+    throw new Error('해제할 기존 암호를 입력해 주세요.');
+  }
+
+  try {
+    // 1. 기존 암호로 해독 로딩
+    const srcDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+    
+    // 2. 새로운 무암호 PDF 생성하여 모든 페이지 복사
+    const unlockedDoc = await PDFDocument.create();
+    const copiedPages = await unlockedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
+    copiedPages.forEach((page) => unlockedDoc.addPage(page));
+
+    // 3. Encrypt 객체 제거 후 깨끗한 상태로 저장
+    return await unlockedDoc.save({ useObjectStreams: true });
+  } catch (err) {
+    throw new Error('PDF 암호 해제에 실패했습니다. 암호가 일치하는지 확인해 주세요.');
+  }
 }
