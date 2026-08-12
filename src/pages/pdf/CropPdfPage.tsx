@@ -5,8 +5,12 @@ import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
 import { cropPdfMargins } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
+import { trackToolUsage } from '../../utils/analytics';
+import * as pdfjsLib from 'pdfjs-dist';
 import confetti from 'canvas-confetti';
-import { Download, FileCheck, RefreshCw, Crop } from 'lucide-react';
+import { Download, FileCheck, RefreshCw, Crop, Eye } from 'lucide-react';
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 export const CropPdfPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -16,13 +20,37 @@ export const CropPdfPage: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  const handleFileSelected = (files: File[]) => {
+  // 실시간 1페이지 크롭 미리보기 캔버스 관련 State ⭐
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  const handleFileSelected = async (files: File[]) => {
     const selected = files[0];
     if (!selected || !selected.type.includes('pdf')) {
       alert('PDF file only');
       return;
     }
+
     setFile(selected);
+
+    // PDF 1페이지 고화질 미리보기 렌더링
+    try {
+      const buffer = await selected.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 1.5 });
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      if (context) {
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        setPreviewImage(canvas.toDataURL('image/png'));
+      }
+    } catch (e) {
+      setPreviewImage(null);
+    }
   };
 
   const handleMarginChange = (key: keyof typeof margins, value: number) => {
@@ -34,6 +62,7 @@ export const CropPdfPage: React.FC = () => {
 
     setIsProcessing(true);
     setProgress(30);
+    trackToolUsage('crop-pdf', 'PDF 여백 자르기');
 
     try {
       const buffer = await file.arrayBuffer();
@@ -55,6 +84,7 @@ export const CropPdfPage: React.FC = () => {
   const handleReset = () => {
     setFile(null);
     setResultUrl(null);
+    setPreviewImage(null);
     setProgress(0);
     setMargins({ top: 30, bottom: 30, left: 20, right: 20 });
   };
@@ -64,7 +94,7 @@ export const CropPdfPage: React.FC = () => {
     en: { selectTitle: 'Select PDF file to crop margins', top: 'Top Margin', bottom: 'Bottom Margin', left: 'Left Margin', right: 'Right Margin', apply: 'Apply Crop Margins', doneTitle: 'Margin Crop Completed!' },
     es: { selectTitle: 'Seleccione archivo PDF para recortar márgenes', top: 'Margen Superior', bottom: 'Margen Inferior', left: 'Margen Izquierdo', right: 'Margen Derecho', apply: 'Aplicar Recorte de Márgenes', doneTitle: '¡Recorte Completado!' },
     zh: { selectTitle: '选择要裁剪边距的 PDF 文件', top: '上边距 (Top)', bottom: '下边距 (Bottom)', left: '左边距 (Left)', right: '右边距 (Right)', apply: '应用边距裁剪', doneTitle: '边距裁剪完成！' },
-    ja: { selectTitle: '余白をトリミングするPDFファイルを選択してください', top: '上余白 (Top)', bottom: '下余白 (Bottom)', left: '左余白 (Left)', right: '右余白 (Right)', apply: '余白トリミングを適用', doneTitle: '余白トリミング完了！' },
+    ja: { selectTitle: '余白를 トリミングするPDFファイルを選択してください', top: '上余白 (Top)', bottom: '下余白 (Bottom)', left: '左余白 (Left)', right: '右余白 (Right)', apply: '余白トリミングを適用', doneTitle: '余白トリミング完了！' },
   }[language] || { selectTitle: 'Select PDF file to crop margins', top: 'Top Margin', bottom: 'Bottom Margin', left: 'Left Margin', right: 'Right Margin', apply: 'Apply Crop Margins', doneTitle: 'Margin Crop Completed!' };
 
   return (
@@ -72,7 +102,7 @@ export const CropPdfPage: React.FC = () => {
       <ToolHeader
         toolId="crop-pdf"
         title="PDF 여백 자르기 (Margin Crop)"
-        description="PDF 스캔본이나 문서의 불필요한 상/하/좌/우 여백(Margin)을 슬라이더로 손쉽게 조절하여 깔끔하게 자릅니다."
+        description="1페이지 실시간 미리보기 캔버스를 통해 상/하/좌/우 자를 여백을 눈으로 직관적으로 확인하며 깔끔하게 잘라냅니다."
       />
 
       <AdBanner slotId="crop-top" />
@@ -110,6 +140,39 @@ export const CropPdfPage: React.FC = () => {
             </button>
           </div>
 
+          {/* 1페이지 실시간 크롭 미리보기 캔버스 오버레이 (Live Preview Overlay) ⭐ */}
+          {previewImage && (
+            <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--accent-primary)', alignSelf: 'flex-start' }}>
+                <Eye size={16} /> 1페이지 실시간 크롭 미리보기 (보라색 박스 = 남을 영역):
+              </span>
+
+              <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', maxHeight: '340px', overflow: 'hidden', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', background: '#fff' }}>
+                <img src={previewImage} alt="crop-preview" style={{ maxHeight: '330px', display: 'block', objectFit: 'contain' }} />
+
+                {/* 실시간 여백 마스크 오버레이 */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: `${(margins.top / 150) * 20}%`,
+                    bottom: `${(margins.bottom / 150) * 20}%`,
+                    left: `${(margins.left / 150) * 20}%`,
+                    right: `${(margins.right / 150) * 20}%`,
+                    border: '2px dashed var(--accent-primary)',
+                    boxShadow: '0 0 0 9999px rgba(0, 0, 0, 0.45)', // 잘려나갈 영역 어둡게 마스킹
+                    pointerEvents: 'none',
+                    transition: 'all 0.1s ease',
+                  }}
+                >
+                  <span style={{ position: 'absolute', top: '4px', left: '6px', background: 'var(--accent-primary)', color: '#fff', fontSize: '0.65rem', padding: '0.1rem 0.4rem', borderRadius: '3px', fontWeight: 700 }}>
+                    Cropped View
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 상/하/좌/우 슬라이더 컨트롤 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
             {(['top', 'bottom', 'left', 'right'] as const).map((key) => (
               <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
