@@ -8,8 +8,8 @@
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
-  --bg-glass: rgba(30, 41, 59, 0.7);
-  --bg-glass-border: rgba(255, 255, 255, 0.1);
+  --bg-glass: rgba(30, 41, 59, 0.85);
+  --bg-glass-border: rgba(255, 255, 255, 0.12);
 
   --accent-primary: #6366f1;
   --accent-primary-hover: #4f46e5;
@@ -37,7 +37,7 @@
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-tertiary: #e2e8f0;
-  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.9);
   --bg-glass-border: rgba(0, 0, 0, 0.08);
 
   --text-main: #0f172a;
@@ -51,6 +51,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -59,7 +65,6 @@ body {
   color: var(--text-main);
   line-height: 1.6;
   min-height: 100vh;
-  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -127,7 +132,7 @@ a {
   font-weight: 600;
 }
 
-/* Ad Banner Styles (Google AdSense Placeholder) */
+/* Ad Banner Styles */
 .adsense-unit {
   background: var(--bg-secondary);
   border: 1px dashed var(--border-color);
@@ -174,6 +179,7 @@ a {
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  min-height: 180px;
 }
 
 .dropzone:hover, .dropzone.active {
@@ -182,12 +188,13 @@ a {
   transform: translateY(-2px);
 }
 
-/* Buttons */
+/* Buttons (Touch Friendly 44px+) */
 .btn-primary {
   background: var(--accent-gradient);
   color: #ffffff;
   border: none;
   padding: 0.75rem 1.75rem;
+  min-height: 44px;
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 1rem;
@@ -216,11 +223,13 @@ a {
   color: var(--text-main);
   border: 1px solid var(--border-color);
   padding: 0.6rem 1.2rem;
+  min-height: 44px;
   border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
   transition: var(--transition-fast);
 }
@@ -273,14 +282,61 @@ a {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-/* Responsive */
+/* =========================================================
+   📱 Mobile First Responsive UX/UI Rules ⭐
+   ========================================================= */
+
+.mobile-hamburger-btn {
+  display: none !important;
+}
+
 @media (max-width: 900px) {
-  .main-layout {
-    flex-direction: column;
-    padding: 1rem;
+  .mobile-hamburger-btn {
+    display: inline-flex !important;
   }
 
-  .sidebar-container {
-    width: 100% !important;
+  .desktop-only-btn {
+    display: none !important;
   }
+
+  .desktop-search {
+    display: none !important;
+  }
+
+  .main-layout {
+    flex-direction: column;
+    padding: 1rem 0.75rem;
+    gap: 1rem;
+  }
+
+  .desktop-sidebar {
+    display: none !important;
+  }
+
+  .tools-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .tools-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dropzone {
+    padding: 1.75rem 1rem;
+  }
+
+  .glass-panel {
+    padding: 1.25rem !important;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+  }
+
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.3rem !important; }
+  h3 { font-size: 1.1rem !important; }
 }

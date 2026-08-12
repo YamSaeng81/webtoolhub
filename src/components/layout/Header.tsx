@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wrench, Sun, Moon, Search, Layers, Globe } from 'lucide-react';
+import { Wrench, Sun, Moon, Search, Layers, Globe, Menu, X } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { LANGUAGE_OPTIONS } from '../../config/i18n';
 
@@ -7,9 +7,11 @@ interface HeaderProps {
   currentPath: string;
   onNavigate: (path: string) => void;
   onSearch?: (query: string) => void;
+  onToggleMobileMenu?: () => void;
+  isMobileMenuOpen?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
+export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch, onToggleMobileMenu, isMobileMenuOpen }) => {
   const { language, setLanguage, t } = useLanguage();
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [searchQuery, setSearchQuery] = useState('');
@@ -30,30 +32,30 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
 
   return (
     <header className="glass-panel" style={{ position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid var(--border-color)' }}>
-      <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0.8rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+      <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
         
         {/* Brand Logo */}
         <div 
           onClick={() => onNavigate('/')} 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
           id="brand-logo"
         >
-          <div style={{ background: 'var(--accent-gradient)', width: '38px', height: '38px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <Wrench size={22} />
+          <div style={{ background: 'var(--accent-gradient)', width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}>
+            <Wrench size={20} />
           </div>
           <div>
-            <span style={{ fontSize: '1.35rem', fontWeight: 800, fontFamily: 'var(--font-heading)', letterSpacing: '-0.03em' }}>
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--font-heading)', letterSpacing: '-0.03em' }}>
               Web<span className="gradient-text">ToolHub</span>
             </span>
-            <span style={{ display: 'block', fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            <span style={{ display: 'block', fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 500 }}>
               {t.brandSub}
             </span>
           </div>
         </div>
 
-        {/* Global Tool Search Bar */}
-        <div style={{ flex: 1, maxWidth: '420px', position: 'relative' }}>
-          <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        {/* Global Tool Search Bar (Desktop) */}
+        <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }} className="desktop-search">
+          <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
             placeholder={t.searchPlaceholder}
@@ -61,23 +63,23 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
             onChange={handleSearchChange}
             style={{
               width: '100%',
-              padding: '0.55rem 1rem 0.55rem 2.5rem',
+              padding: '0.5rem 1rem 0.5rem 2.5rem',
               borderRadius: 'var(--radius-full)',
               background: 'var(--bg-secondary)',
               border: '1px solid var(--border-color)',
               color: 'var(--text-main)',
-              fontSize: '0.88rem',
+              fontSize: '0.85rem',
               outline: 'none',
             }}
           />
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           
           {/* Language Selector Dropdown */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', background: 'var(--bg-secondary)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-color)' }}>
-            <Globe size={16} color="var(--accent-primary)" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', background: 'var(--bg-secondary)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-color)' }}>
+            <Globe size={15} color="var(--accent-primary)" />
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value as any)}
@@ -85,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
                 background: 'none',
                 border: 'none',
                 color: 'var(--text-main)',
-                fontSize: '0.85rem',
+                fontSize: '0.8rem',
                 fontWeight: 600,
                 cursor: 'pointer',
                 outline: 'none',
@@ -102,21 +104,31 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
 
           <button 
             onClick={() => onNavigate('/')}
-            className="btn-secondary"
-            style={{ borderRadius: 'var(--radius-full)', fontSize: '0.85rem' }}
+            className="btn-secondary desktop-only-btn"
+            style={{ borderRadius: 'var(--radius-full)', fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
           >
-            <Layers size={16} />
+            <Layers size={15} />
             <span>{t.allTools}</span>
           </button>
 
           <button
             onClick={toggleTheme}
             className="btn-secondary"
-            style={{ width: '38px', height: '38px', padding: 0, borderRadius: '50%', justifyContent: 'center' }}
+            style={{ width: '36px', height: '36px', minHeight: '36px', padding: 0, borderRadius: '50%', justifyContent: 'center', flexShrink: 0 }}
             title="테마 전환"
             id="theme-toggle-btn"
           >
-            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
+          {/* 🍔 모바일 전용 햄버거 메뉴 버튼 ⭐ */}
+          <button
+            onClick={onToggleMobileMenu}
+            className="btn-secondary mobile-hamburger-btn"
+            style={{ width: '36px', height: '36px', minHeight: '36px', padding: 0, borderRadius: 'var(--radius-sm)', justifyContent: 'center', flexShrink: 0 }}
+            aria-label="Toggle Mobile Menu"
+          >
+            {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 

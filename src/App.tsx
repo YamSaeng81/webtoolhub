@@ -41,6 +41,7 @@ export default function App() {
     return '/';
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -57,10 +58,12 @@ export default function App() {
     }
     trackPageView(currentPath);
     window.scrollTo(0, 0);
+    setIsMobileMenuOpen(false);
   }, [currentPath]);
 
   const handleNavigate = (path: string) => {
     setCurrentPath(path);
+    setIsMobileMenuOpen(false);
   };
 
   const renderPage = () => {
@@ -98,7 +101,7 @@ export default function App() {
       case '/image/favicon-generator':
         return <FaviconGeneratorPage />;
 
-      // 🎬 MEDIA (신규 3종 포함 총 5개 라우트) ⭐
+      // 🎬 MEDIA (총 5개 라우트)
       case '/media/video-to-mp3':
         return <VideoToMp3Page />;
       case '/media/audio-cutter':
@@ -129,12 +132,23 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
-      <Header currentPath={currentPath} onNavigate={handleNavigate} onSearch={setSearchQuery} />
+      <Header
+        currentPath={currentPath}
+        onNavigate={handleNavigate}
+        onSearch={setSearchQuery}
+        onToggleMobileMenu={() => setIsMobileMenuOpen((prev) => !prev)}
+        isMobileMenuOpen={isMobileMenuOpen}
+      />
 
-      <div style={{ flex: 1, maxWidth: '1440px', width: '100%', margin: '0 auto', padding: '1.5rem', display: 'flex', gap: '1.5rem' }}>
-        <Sidebar currentPath={currentPath} onNavigate={handleNavigate} />
+      <div className="main-layout">
+        <Sidebar
+          currentPath={currentPath}
+          onNavigate={handleNavigate}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
+        />
 
-        <main style={{ flex: 1, minWidth: 0 }}>
+        <main className="content-area">
           {renderPage()}
         </main>
       </div>
