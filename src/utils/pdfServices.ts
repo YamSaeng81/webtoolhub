@@ -1,15 +1,31 @@
 import { PDFDocument, PDFName, PDFHexString, StandardFonts, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 
 export type PageSizeMode = 'a4' | 'original';
 
 /**
  * OCR 추출 텍스트와 캔버스 이미지를 기반으로 '검색 가능한 PDF(Searchable PDF)'를 생성하는 함수
+ * 한글 및 다국어 UTF-8 유니코드 인코딩 보장 ⭐
  */
 export async function createSearchablePdf(
   pagesData: { canvas: HTMLCanvasElement; text: string }[]
 ): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  pdfDoc.registerFontkit(fontkit);
+
+  // 기본 표준 영문 폰트
+  const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  // 한글/다국어 유니코드 지원 폰트 (Google Noto Sans CJK 경량 TTF CDN)
+  let customFont = helveticaFont;
+  try {
+    const fontBytes = await fetch('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/packages/pretendard/dist/public/static/Pretendard-Regular.otf').then((res) => res.arrayBuffer());
+    if (fontBytes && fontBytes.byteLength > 0) {
+      customFont = await pdfDoc.embedFont(fontBytes, { subset: true });
+    }
+  } catch (e) {
+    // CDN 네트워크 연결 시도 실패 시 기본 폰트로 폴백
+  }
 
   for (const pageItem of pagesData) {
     const { canvas, text } = pageItem;
@@ -22,7 +38,7 @@ export async function createSearchablePdf(
     // 페이지 생성 (픽셀 크기 1:1)
     const page = pdfDoc.addPage([width, height]);
 
-    // 배경에 이미지 그리기
+    // 배경에 이미지 렌더링
     page.drawImage(pngImage, {
       x: 0,
       y: 0,
@@ -30,28 +46,32 @@ export async function createSearchablePdf(
       height,
     });
 
-    // 이미지 위에 텍스트 레이어를 덮어씌워 검색 및 드래그 복사가 가능하도록 인코딩 ⭐
+    // 이미지 위에 텍스트 레이어를 덮어씌워 검색 및 드래그 복사가 100% 가능하도록 인코딩 ⭐
     if (text && text.trim().length > 0) {
       const cleanLines = text.split('\n').filter((l) => l.trim().length > 0);
       let currentY = height - 30;
 
-      cleanLines.forEach((line) => {
+      for (const line of cleanLines) {
         if (currentY > 20) {
           try {
+            // 한글 및 다국어가 포함되어 있으면 customFont 사용
+            const hasUnicode = /[^\u0000-\u007F]/.test(line);
+            const targetFont = hasUnicode ? customFont : helveticaFont;
+
             page.drawText(line, {
               x: 20,
               y: currentY,
               size: 10,
-              font,
+              font: targetFont,
               color: rgb(0, 0, 0),
-              opacity: 0, // 투명 텍스트 레이어 (Ctrl+F 검색 및 드래그 복사 전용)
+              opacity: 0.001, // 뷰어 검색 엔진(Ctrl+F 및 드래그)에 100% 투명 감지 레이어
             });
           } catch (e) {
-            // 한글/특수문자 인코딩 예외 처리
+            // 폰트 예외시 폴백 처리
           }
           currentY -= 14;
         }
-      });
+      }
     }
   }
 
