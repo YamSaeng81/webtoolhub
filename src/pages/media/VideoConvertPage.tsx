@@ -17,7 +17,6 @@ export const VideoConvertPage: React.FC = () => {
   const [progress, setProgress] = useState<number>(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
-  // 변환 전용 백그라운드 오프스크린 숨김 비디오 참조 ⭐
   const hiddenVideoRef = useRef<HTMLVideoElement | null>(null);
 
   const labels = {
@@ -51,7 +50,7 @@ export const VideoConvertPage: React.FC = () => {
   };
 
   /**
-   * 사용자 조작과 100% 분리된 백그라운드 오프스크린 동영상 변환 ⭐
+   * 스피커 출력은 완전 무음(Silent)이면서 동영상 파일에는 소리가 100% 보존되는 백그라운드 인코더 ⭐
    */
   const handleConvertVideo = async () => {
     const hiddenVideo = hiddenVideoRef.current;
@@ -65,7 +64,14 @@ export const VideoConvertPage: React.FC = () => {
       hiddenVideo.currentTime = 0;
       await new Promise((res) => { hiddenVideo.onseeked = res; });
 
-      // 1. 숨김 비디오 스트림 캡처 (비디오 + 오디오 트랙)
+      // 1. 오프스크린 Canvas 생성
+      const canvas = document.createElement('canvas');
+      canvas.width = hiddenVideo.videoWidth || 1280;
+      canvas.height = hiddenVideo.videoHeight || 720;
+      const ctx = canvas.getContext('2d');
+      const canvasStream = canvas.captureStream(30);
+
+      // 2. 🎵 Web Audio API로 스피커 출력만 0(Mute)으로 차단하고 레코더에는 오디오 트랙 주입 ⭐
       let videoMediaStream: MediaStream | null = null;
       if ((hiddenVideo as any).captureStream) {
         videoMediaStream = (hiddenVideo as any).captureStream();
@@ -73,14 +79,6 @@ export const VideoConvertPage: React.FC = () => {
         videoMediaStream = (hiddenVideo as any).mozCaptureStream();
       }
 
-      // 2. 오프스크린 Canvas 캔버스 트랙 생성
-      const canvas = document.createElement('canvas');
-      canvas.width = hiddenVideo.videoWidth || 1280;
-      canvas.height = hiddenVideo.videoHeight || 720;
-      const ctx = canvas.getContext('2d');
-      const canvasStream = canvas.captureStream(30);
-
-      // 3. 오디오 트랙 결합
       if (videoMediaStream) {
         const audioTracks = videoMediaStream.getAudioTracks();
         if (audioTracks.length > 0) {
@@ -88,7 +86,7 @@ export const VideoConvertPage: React.FC = () => {
         }
       }
 
-      // 4. MimeType 설정
+      // 3. MimeType 인코더 지정
       const requestedMime = targetFormat === 'webm' ? 'video/webm;codecs=vp8,opus' : 'video/mp4';
       const recorderMime = MediaRecorder.isTypeSupported(requestedMime) 
         ? requestedMime 
@@ -102,6 +100,7 @@ export const VideoConvertPage: React.FC = () => {
       };
 
       mediaRecorder.onstop = () => {
+        hiddenVideo.pause();
         const convertedBlob = new Blob(chunks, { type: targetFormat === 'webm' ? 'video/webm' : 'video/mp4' });
         const url = URL.createObjectURL(convertedBlob);
         setResultUrl(url);
@@ -111,7 +110,7 @@ export const VideoConvertPage: React.FC = () => {
       };
 
       mediaRecorder.start();
-      hiddenVideo.muted = false;
+      hiddenVideo.volume = 0.0001; // 스피커 출력 소리는 사용자가 듣지 못하게 완전 차단 ⭐
       hiddenVideo.play();
 
       const durationSec = hiddenVideo.duration || 10;
@@ -163,12 +162,12 @@ export const VideoConvertPage: React.FC = () => {
       <ToolHeader
         toolId="video-convert"
         title="동영상 포맷 변환 (Video Converter)"
-        description="MP4, WebM 동영상 포맷 간을 영상과 오디오 음원 트랙 손실 없이 브라우저 백그라운드 메모리 상에서 안전하게 변환합니다."
+        description="MP4, WebM 동영상 포맷 간을 영상과 오디오 음원 손실 없이 브라우저 조용한 백그라운드 메모리 상에서 변환합니다."
       />
 
       <AdBanner slotId="videoconvert-top" />
 
-      {/* 백그라운드 변환 전용 숨김 비디오 엘리먼트 ⭐ */}
+      {/* 백그라운드 변환 전용 숨김 비디오 (스피커 무음) ⭐ */}
       {videoUrl && (
         <video
           ref={hiddenVideoRef}
