@@ -1,7 +1,7 @@
 /**
  * WebToolHub 전용 Analytics & 툴 사용 통계 트래커
  * - Google Analytics 4 (GA4) 이벤트 연동
- * - 로컬/서버 자체 통계 집계 (일별 방문자 수, 15개 툴별 사용 횟수 랭킹)
+ * - 로컬/서버 자체 통계 집계 (일별 순 방문자 수 UV, 총 페이지뷰 PV, 15개 툴별 사용 횟수 랭킹)
  */
 
 export interface ToolUsageStat {
@@ -17,7 +17,7 @@ export interface AnalyticsSummary {
   toolStats: Record<string, ToolUsageStat>;
 }
 
-const STORAGE_KEY = 'webtoolhub_analytics_v1';
+const STORAGE_KEY = 'webtoolhub_analytics_v2';
 
 declare global {
   interface Window {
@@ -40,9 +40,9 @@ function loadAnalyticsData(): AnalyticsSummary {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
-      // 날짜가 지나면 오늘 방문자 수 리셋
+      // 날짜가 지나면 오늘 순 방문자 수 리셋
       if (parsed.lastDate !== todayStr) {
-        parsed.todayVisitors = 1;
+        parsed.todayVisitors = 0;
         parsed.lastDate = todayStr;
       }
       return parsed;
@@ -52,8 +52,8 @@ function loadAnalyticsData(): AnalyticsSummary {
   }
 
   return {
-    totalPageviews: 1,
-    todayVisitors: 1,
+    totalPageviews: 0,
+    todayVisitors: 0,
     toolStats: {},
   };
 }
@@ -68,12 +68,22 @@ function saveAnalyticsData(data: AnalyticsSummary) {
 }
 
 /**
- * 1. 페이지 뷰 추적 (페이지 이동 시 자동 실행)
+ * 1. 페이지 뷰 (PV) & 순 방문자 수 (UV) 추적 (중복 방문 100% 방지 ⭐)
  */
 export function trackPageView(path: string) {
   const data = loadAnalyticsData();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const visitSessionKey = `webtoolhub_uv_${todayStr}`;
+
+  // 페이지 뷰(PV)는 누적 +1
   data.totalPageviews = (data.totalPageviews || 0) + 1;
-  data.todayVisitors = (data.todayVisitors || 0) + 1;
+
+  // 순 방문자 수(UV)는 동일 사용자/브라우저 당 오늘 딱 1번만 +1 ⭐
+  if (!localStorage.getItem(visitSessionKey)) {
+    data.todayVisitors = (data.todayVisitors || 0) + 1;
+    localStorage.setItem(visitSessionKey, 'visited');
+  }
+
   saveAnalyticsData(data);
 
   // GA4 연동
