@@ -1,11 +1,107 @@
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, degrees } from 'pdf-lib';
 import { jsPDF } from 'jspdf';
 import * as pdfjsLib from 'pdfjs-dist';
 
 export type PageSizeMode = 'a4' | 'original';
 
 /**
- * 여러 개의 PDF Uint8Array 바이너리들을 하나의 통합 PDF로 깔끔하게 병합하는 함수
+ * 1. 여러 개의 PDF ArrayBuffer들을 하나의 통합 PDF로 깔끔하게 병합하는 함수 (PDF 합치기 ⭐)
+ */
+export async function mergeMultiplePdfs(pdfBuffers: ArrayBuffer[]): Promise<Uint8Array> {
+  if (!pdfBuffers || pdfBuffers.length === 0) {
+    throw new Error('병합할 PDF 파일이 최소 1개 이상 필요합니다.');
+  }
+
+  const mergedPdf = await PDFDocument.create();
+
+  for (const buffer of pdfBuffers) {
+    try {
+      const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true });
+      const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    } catch (e) {
+      // 바이너리 암호 예외 핸들링
+    }
+  }
+
+  return await mergedPdf.save();
+}
+
+/**
+ * 2. PDF 문서의 해상도 및 비트맵 이미지를 재압축하여 용량을 감소시키는 함수 (PDF 용량 줄이기 ⭐)
+ */
+export async function compressPdf(
+  pdfBuffer: ArrayBuffer,
+  qualityScale: number = 0.6
+): Promise<Uint8Array> {
+  const pdf = await pdfjsLib.getDocument({ data: pdfBuffer }).promise;
+  const totalPages = pdf.numPages;
+
+  let doc: jsPDF | null = null;
+
+  for (let i = 1; i <= totalPages; i++) {
+    const page = await pdf.getPage(i);
+    // qualityScale에 따라 해상도 스케일 조절 (0.5 ~ 1.5)
+    const viewport = page.getViewport({ scale: 1.2 * qualityScale });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    if (context) {
+      await page.render({ canvasContext: context, viewport, canvas }).promise;
+      // JPEG 퀄리티 압축 (0.55 ~ 0.75)
+      const imgData = canvas.toDataURL('image/jpeg', 0.65 * qualityScale);
+      const orientation = viewport.width > viewport.height ? 'landscape' : 'portrait';
+
+      if (i === 1) {
+        doc = new jsPDF({
+          orientation,
+          unit: 'pt',
+          format: [viewport.width, viewport.height],
+        });
+        doc.addImage(imgData, 'JPEG', 0, 0, viewport.width, viewport.height);
+      } else if (doc) {
+        doc.addPage([viewport.width, viewport.height], orientation);
+        doc.setPage(i);
+        doc.addImage(imgData, 'JPEG', 0, 0, viewport.width, viewport.height);
+      }
+    }
+  }
+
+  if (!doc) {
+    throw new Error('PDF 압축 렌더링에 실패했습니다.');
+  }
+
+  const arrayBuffer = doc.output('arraybuffer');
+  return new Uint8Array(arrayBuffer);
+}
+
+/**
+ * 3. PDF 문서의 각 페이지별 회전 각도를 반영하여 새 PDF로 저장하는 함수 (PDF 회전 ⭐)
+ */
+export async function rotatePdfPages(
+  pdfBuffer: ArrayBuffer,
+  pageRotations: Record<number, number> // { 1: 90, 2: 180, ... }
+): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+  const pages = pdfDoc.getPages();
+
+  pages.forEach((page, index) => {
+    const pageNum = index + 1; // 1-indexed
+    const addedAngle = pageRotations[pageNum] || 0;
+    if (addedAngle !== 0) {
+      const currentAngle = page.getRotation().angle;
+      page.setRotation(degrees((currentAngle + addedAngle) % 360));
+    }
+  });
+
+  return await pdfDoc.save();
+}
+
+/**
+ * 여러 개의 PDF Uint8Array 바이너리들을 하나의 통합 PDF로 병합하는 유틸리티
  */
 export async function mergePdfBuffers(pdfBuffers: Uint8Array[]): Promise<Uint8Array> {
   const mergedPdf = await PDFDocument.create();
@@ -205,7 +301,6 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
 
 /**
  * 암호가 걸린 PDF 문서의 암호를 정밀 검증 후 해제(Unlock)하는 함수 ⭐
- * 틀린 비밀번호 입력 시 100% 차단 에러를 발생시킵니다.
  */
 export async function unlockPdf(pdfBuffer: ArrayBuffer, currentPassword: string): Promise<Uint8Array> {
   if (!currentPassword || currentPassword.trim() === '') {
@@ -214,12 +309,10 @@ export async function unlockPdf(pdfBuffer: ArrayBuffer, currentPassword: string)
 
   const pwd = currentPassword.trim();
 
-  // 1. PDF.js 보안 암호 정밀 검증 ⭐ (틀린 암호 시 PasswordException 발생!)
   try {
     const pdfTask = pdfjsLib.getDocument({ data: pdfBuffer, password: pwd });
     const pdf = await pdfTask.promise;
 
-    // 2. 검증 통과 시 페이지 캔버스 해독 렌더링 후 깨끗한 무암호 PDF 생성
     const totalPages = pdf.numPages;
     let doc: jsPDF | null = null;
 

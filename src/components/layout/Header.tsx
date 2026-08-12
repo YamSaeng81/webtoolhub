@@ -94,7 +94,7 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch }) => {
             >
               {LANGUAGE_OPTIONS.map((opt) => (
                 <option key={opt.code} value={opt.code} style={{ background: 'var(--bg-primary)', color: 'var(--text-main)' }}>
-                  {opt.flag} {opt.name}
+                  {opt.flag} {opt.label}
                 </option>
               ))}
             </select>
