@@ -23,14 +23,13 @@ export const AudioCutterPage: React.FC = () => {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // 5개 국어 (KO, EN, ES, ZH, JA) i18n 레이블 딕셔너리 ⭐
   const labels = {
-    ko: { selectTitle: '자르고 싶은 오디오(MP3, WAV, OGG) 파일을 선택하세요', totalTime: '전체 오디오 길이:', startLabel: '시작 시간:', endLabel: '종료 시간:', durationLabel: '잘라낼 구간 길이:', previewBtn: '선택 구간 미리듣기', pauseBtn: '미리듣기 정지', cutBtn: '오디오 구간 잘라내기 & 다운로드', doneTitle: '오디오 구간 자르기 완료!' },
-    en: { selectTitle: 'Select audio file (MP3, WAV, OGG) to cut', totalTime: 'Total Audio Duration:', startLabel: 'Start Time:', endLabel: 'End Time:', durationLabel: 'Selected Duration:', previewBtn: 'Preview Selected Range', pauseBtn: 'Pause Preview', cutBtn: 'Cut Selected Segment & Download', doneTitle: 'Audio Trimming Completed!' },
-    es: { selectTitle: 'Seleccione archivo de audio para recortar', totalTime: 'Duración total del audio:', startLabel: 'Tiempo de inicio:', endLabel: 'Tiempo de fin:', durationLabel: 'Duración seleccionada:', previewBtn: 'Escuchar fragmento seleccionado', pauseBtn: 'Pausar vista previa', cutBtn: 'Recortar segmento y descargar', doneTitle: '¡Recorte de audio completado!' },
-    zh: { selectTitle: '选择要剪辑的音频文件 (MP3, WAV, OGG)', totalTime: '音频总时长：', startLabel: '起始时间：', endLabel: '结束时间：', durationLabel: '选中片段时长：', previewBtn: '预览选定片段', pauseBtn: '暂停预览', cutBtn: '剪辑选定片段并下载', doneTitle: '音频剪辑完成！' },
-    ja: { selectTitle: 'カットする音声ファイルを選択してください', totalTime: '全体再生時間:', startLabel: '開始時間:', endLabel: '終了時間:', durationLabel: '選択区間の長さ:', previewBtn: '選択区間をプレビュー再生', pauseBtn: 'プレビュー一時停止', cutBtn: '選択区間をカットしてダウンロード', doneTitle: '音声トリミング完了！' },
-  }[language] || { selectTitle: 'Select audio file (MP3, WAV, OGG) to cut', totalTime: 'Total Audio Duration:', startLabel: 'Start Time:', endLabel: 'End Time:', durationLabel: 'Selected Duration:', previewBtn: 'Preview Selected Range', pauseBtn: 'Pause Preview', cutBtn: 'Cut Selected Segment & Download', doneTitle: 'Audio Trimming Completed!' };
+    ko: { selectTitle: '자르고 싶은 오디오(MP3, WAV, OGG) 파일을 선택하세요', totalTime: '전체 오디오 길이:', startLabel: '시작 시간', endLabel: '종료 시간', durationLabel: '잘라낼 선택 구간:', previewBtn: '선택 구간 미리듣기', pauseBtn: '미리듣기 정지', cutBtn: '오디오 구간 잘라내기 & 다운로드', doneTitle: '오디오 구간 자르기 완료!' },
+    en: { selectTitle: 'Select audio file (MP3, WAV, OGG) to cut', totalTime: 'Total Audio Duration:', startLabel: 'Start Time', endLabel: 'End Time', durationLabel: 'Selected Range:', previewBtn: 'Preview Selected Range', pauseBtn: 'Pause Preview', cutBtn: 'Cut Selected Segment & Download', doneTitle: 'Audio Trimming Completed!' },
+    es: { selectTitle: 'Seleccione archivo de audio para recortar', totalTime: 'Duración total del audio:', startLabel: 'Inicio', endLabel: 'Fin', durationLabel: 'Segmento seleccionado:', previewBtn: 'Escuchar fragmento seleccionado', pauseBtn: 'Pausar vista previa', cutBtn: 'Recortar segmento y descargar', doneTitle: '¡Recorte de audio completado!' },
+    zh: { selectTitle: '选择要剪辑的音频文件 (MP3, WAV, OGG)', totalTime: '音频总时长：', startLabel: '起始时间', endLabel: '结束时间', durationLabel: '选中片段：', previewBtn: '预览选定片段', pauseBtn: '暂停预览', cutBtn: '剪辑选定片段并下载', doneTitle: '音频剪辑完成！' },
+    ja: { selectTitle: 'カットする音声ファイルを選択してください', totalTime: '全体再生時間:', startLabel: '開始時間', endLabel: '終了時間', durationLabel: '選択区間:', previewBtn: '選択区間をプレビュー再生', pauseBtn: 'プレビュー一時停止', cutBtn: '選択区間をカットしてダウンロード', doneTitle: '音声トリミング完了！' },
+  }[language] || { selectTitle: 'Select audio file (MP3, WAV, OGG) to cut', totalTime: 'Total Audio Duration:', startLabel: 'Start Time', endLabel: 'End Time', durationLabel: 'Selected Range:', previewBtn: 'Preview Selected Range', pauseBtn: 'Pause Preview', cutBtn: 'Cut Selected Segment & Download', doneTitle: 'Audio Trimming Completed!' };
 
   const handleFileSelected = (files: File[]) => {
     const selected = files[0];
@@ -51,7 +50,6 @@ export const AudioCutterPage: React.FC = () => {
     };
   };
 
-  // 선택 구간 미리듣기 조종 루프 ⭐
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -116,7 +114,6 @@ export const AudioCutterPage: React.FC = () => {
       }
 
       setProgress(80);
-      // WAV PCM 인코딩
       const wavBlob = audioBufferToWav(trimmedBuffer);
       const url = URL.createObjectURL(wavBlob);
 
@@ -141,17 +138,20 @@ export const AudioCutterPage: React.FC = () => {
     setIsPlayingPreview(false);
   };
 
+  // 단일 타임라인 바 비율 계산 (0% ~ 100%) ⭐
+  const startPercent = duration > 0 ? (startTime / duration) * 100 : 0;
+  const endPercent = duration > 0 ? (endTime / duration) * 100 : 100;
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <ToolHeader
         toolId="audio-cutter"
         title="오디오 / MP3 구간 자르기 (Audio Trimmer)"
-        description="전체 오디오 길이를 확인하며 원하는 시작/종료 시간 구간을 실시간으로 미리 들어보고 정확히 잘라내어 저장합니다."
+        description="단 1개의 통합 오디오 타임라인 바에서 시작과 끝 구간을 직관적으로 선택하고 실시간 미리들어본 후 자릅니다."
       />
 
       <AdBanner slotId="cutter-top" />
 
-      {/* 실시간 오디오 미디어 엘리먼트 (미리듣기 컨트롤용) */}
       {audioUrl && <audio ref={audioRef} src={audioUrl} preload="auto" style={{ display: 'none' }} />}
 
       {resultUrl && file ? (
@@ -196,65 +196,106 @@ export const AudioCutterPage: React.FC = () => {
             </button>
           </div>
 
-          {/* 시작 시간 / 종료 시간 선택 및 구간 길이 표시 ⭐ */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px dashed var(--border-color)', paddingBottom: '0.75rem' }}>
-              <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{labels.durationLabel}</span>
-              <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent-primary)' }}>
-                {formatTime(startTime)} ~ {formatTime(endTime)} ({Math.max(0, endTime - startTime)}초)
-              </span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
-              {/* 시작 시간 컨트롤 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span>{labels.startLabel}</span>
-                  <span style={{ color: 'var(--accent-primary)' }}>{formatTime(startTime)} ({startTime}초)</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max={Math.max(0, endTime - 1)}
-                  value={startTime}
-                  onChange={(e) => setStartTime(Number(e.target.value))}
-                  style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
-                />
+          {/* 🎵 단 1개의 통합 오디오 타임라인 슬라이더 바 (Single Audio Track Bar) ⭐ */}
+          <div style={{ background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            
+            {/* 선택 구간 수치 헤더 */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.9rem', fontWeight: 600 }}>
+                {labels.durationLabel} <span style={{ color: 'var(--accent-primary)', fontSize: '1.1rem', fontWeight: 800 }}>{formatTime(startTime)} ~ {formatTime(endTime)} ({Math.max(0, endTime - startTime)}초)</span>
               </div>
 
-              {/* 종료 시간 컨트롤 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 600 }}>
-                  <span>{labels.endLabel}</span>
-                  <span style={{ color: 'var(--accent-primary)' }}>{formatTime(endTime)} ({endTime}초)</span>
-                </div>
-                <input
-                  type="range"
-                  min={startTime + 1}
-                  max={duration}
-                  value={endTime}
-                  onChange={(e) => setEndTime(Number(e.target.value))}
-                  style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
-                />
-              </div>
+              <button
+                onClick={togglePreview}
+                className="btn-secondary"
+                style={{
+                  padding: '0.45rem 1rem',
+                  fontSize: '0.85rem',
+                  background: isPlayingPreview ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)',
+                  color: isPlayingPreview ? '#ef4444' : 'var(--accent-primary)',
+                  border: isPlayingPreview ? '1px solid #ef4444' : '1px solid var(--accent-primary)',
+                }}
+              >
+                {isPlayingPreview ? <Pause size={16} /> : <Play size={16} />}
+                {isPlayingPreview ? labels.pauseBtn : labels.previewBtn}
+              </button>
             </div>
 
-            {/* ▶️ 선택 구간 미리듣기 버튼 ⭐ */}
-            <button
-              onClick={togglePreview}
-              className="btn-secondary"
-              style={{
-                alignSelf: 'center',
-                padding: '0.65rem 1.5rem',
-                fontSize: '0.95rem',
-                background: isPlayingPreview ? 'rgba(239, 68, 68, 0.15)' : 'rgba(99, 102, 241, 0.15)',
-                color: isPlayingPreview ? '#ef4444' : 'var(--accent-primary)',
-                border: isPlayingPreview ? '1px solid #ef4444' : '1px solid var(--accent-primary)',
-              }}
-            >
-              {isPlayingPreview ? <Pause size={18} /> : <Play size={18} />}
-              {isPlayingPreview ? labels.pauseBtn : labels.previewBtn}
-            </button>
+            {/* 단 1개의 일체형 슬라이더 타임라인 바 컴포넌트 ⭐ */}
+            <div style={{ position: 'relative', height: '42px', padding: '10px 0', userSelect: 'none' }}>
+              {/* 전체 트랙 배경 레일 */}
+              <div style={{ position: 'absolute', top: '16px', left: 0, right: 0, height: '10px', borderRadius: '5px', background: 'var(--border-color)' }} />
+              
+              {/* 선택된 활성 구간 보라색 하이라이트 트랙 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  left: `${startPercent}%`,
+                  width: `${Math.max(0, endPercent - startPercent)}%`,
+                  height: '10px',
+                  borderRadius: '5px',
+                  background: 'var(--accent-gradient)',
+                  boxShadow: '0 0 8px rgba(99, 102, 241, 0.5)',
+                }}
+              />
+
+              {/* 시작 슬라이더 핸들 레인지 Input */}
+              <input
+                type="range"
+                min="0"
+                max={duration}
+                value={startTime}
+                onChange={(e) => {
+                  const val = Math.min(Number(e.target.value), endTime - 1);
+                  setStartTime(val);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '6px',
+                  left: 0,
+                  width: '100%',
+                  height: '30px',
+                  appearance: 'none',
+                  background: 'transparent',
+                  pointerEvents: 'auto',
+                  cursor: 'pointer',
+                  zIndex: 3,
+                }}
+              />
+
+              {/* 종료 슬라이더 핸들 레인지 Input */}
+              <input
+                type="range"
+                min="0"
+                max={duration}
+                value={endTime}
+                onChange={(e) => {
+                  const val = Math.max(Number(e.target.value), startTime + 1);
+                  setEndTime(val);
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '6px',
+                  left: 0,
+                  width: '100%',
+                  height: '30px',
+                  appearance: 'none',
+                  background: 'transparent',
+                  pointerEvents: 'auto',
+                  cursor: 'pointer',
+                  zIndex: 4,
+                }}
+              />
+            </div>
+
+            {/* 타임라인 아래 시간 가이드 (00:00 / MM:SS / Total) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              <span>00:00 (시작)</span>
+              <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>선택: {formatTime(startTime)} - {formatTime(endTime)}</span>
+              <span>{formatTime(duration)} (끝)</span>
+            </div>
+
           </div>
 
           {isProcessing && <ProgressBar progress={progress} statusText={t.processing} />}
