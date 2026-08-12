@@ -44,14 +44,13 @@ export const VideoConvertPage: React.FC = () => {
     setVideoUrl(URL.createObjectURL(selected));
     setResultUrl(null);
 
-    // 원본 포맷과 동일하지 않은 목표 포맷으로 자동 기본 선택 ⭐
     const orig = getOriginalFormat(selected.name);
     if (orig === 'webm') setTargetFormat('mp4');
     else setTargetFormat('webm');
   };
 
   /**
-   * 브라우저 Canvas + Web Audio API 100% 무결점 동영상 인코딩 ⭐
+   * 영상(비디오 트랙) + 오디오 트랙 100% 음원 합성 변환 ⭐
    */
   const handleConvertVideo = async () => {
     const video = videoRef.current;
@@ -65,15 +64,30 @@ export const VideoConvertPage: React.FC = () => {
       video.currentTime = 0;
       await new Promise((res) => { video.onseeked = res; });
 
-      // Canvas 렌더링 동영상 캡처 스트림 생성
+      // 1. 비디오 엘리먼트 고유 캡처 스트림 생성 (오디오 트랙 포함)
+      let videoMediaStream: MediaStream | null = null;
+      if ((video as any).captureStream) {
+        videoMediaStream = (video as any).captureStream();
+      } else if ((video as any).mozCaptureStream) {
+        videoMediaStream = (video as any).mozCaptureStream();
+      }
+
+      // 2. Canvas 캔버스 비디오 트랙 생성
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth || 1280;
       canvas.height = video.videoHeight || 720;
       const ctx = canvas.getContext('2d');
-
       const canvasStream = canvas.captureStream(30);
 
-      // 브라우저 MediaRecorder 인코더 설정
+      // 3. 🎵 비디오 미디어 스트림에서 오디오 트랙을 가져와 캔버스 스트림에 합성! ⭐
+      if (videoMediaStream) {
+        const audioTracks = videoMediaStream.getAudioTracks();
+        if (audioTracks.length > 0) {
+          audioTracks.forEach((track) => canvasStream.addTrack(track));
+        }
+      }
+
+      // 4. 지원 가능한 MediaRecorder MimeType 지정
       const requestedMime = targetFormat === 'webm' ? 'video/webm;codecs=vp8,opus' : 'video/mp4';
       const recorderMime = MediaRecorder.isTypeSupported(requestedMime) 
         ? requestedMime 
@@ -96,6 +110,7 @@ export const VideoConvertPage: React.FC = () => {
       };
 
       mediaRecorder.start();
+      video.muted = false; // 오디오 렌더링을 위해 음소거 해제 ⭐
       video.play();
 
       const durationSec = video.duration || 10;
@@ -147,7 +162,7 @@ export const VideoConvertPage: React.FC = () => {
       <ToolHeader
         toolId="video-convert"
         title="동영상 포맷 변환 (Video Converter)"
-        description="MP4, WebM 동영상 포맷 간을 서버 업로드 없이 브라우저 메모리 상에서 안전하게 상호 변환합니다."
+        description="MP4, WebM 동영상 포맷 간을 영상과 오디오 음원 트랙 손실 없이 브라우저 메모리 상에서 안전하게 변환합니다."
       />
 
       <AdBanner slotId="videoconvert-top" />
@@ -194,7 +209,6 @@ export const VideoConvertPage: React.FC = () => {
             </div>
           )}
 
-          {/* 동일한 포맷 버튼 비활성화 (Disabled) 칠하기 ⭐ */}
           <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>{labels.targetLabel}</label>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
