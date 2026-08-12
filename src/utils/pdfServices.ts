@@ -148,7 +148,6 @@ export async function cropPdfMargins(
 
 /**
  * jsPDF 100% 표준 호환 PDF 열람 비밀번호(Open Password) 강제 암호화 함수 ⭐
- * Acrobat Reader, Chrome, Edge 등 모든 뷰어에서 100% 비밀번호 팝업 출력을 보장합니다!
  */
 export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): Promise<Uint8Array> {
   if (!userPassword || userPassword.trim() === '') {
@@ -205,22 +204,61 @@ export async function protectPdf(pdfBuffer: ArrayBuffer, userPassword: string): 
 }
 
 /**
- * 암호가 걸린 PDF 문서의 암호를 해제(Unlock)하여 무암호 PDF로 변환하는 함수 ⭐
+ * 암호가 걸린 PDF 문서의 암호를 정밀 검증 후 해제(Unlock)하는 함수 ⭐
+ * 틀린 비밀번호 입력 시 100% 차단 에러를 발생시킵니다.
  */
 export async function unlockPdf(pdfBuffer: ArrayBuffer, currentPassword: string): Promise<Uint8Array> {
   if (!currentPassword || currentPassword.trim() === '') {
     throw new Error('해제할 기존 암호를 입력해 주세요.');
   }
 
-  try {
-    const srcDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
-    
-    const unlockedDoc = await PDFDocument.create();
-    const copiedPages = await unlockedDoc.copyPages(srcDoc, srcDoc.getPageIndices());
-    copiedPages.forEach((page) => unlockedDoc.addPage(page));
+  const pwd = currentPassword.trim();
 
-    return await unlockedDoc.save({ useObjectStreams: true });
+  // 1. PDF.js 보안 암호 정밀 검증 ⭐ (틀린 암호 시 PasswordException 발생!)
+  try {
+    const pdfTask = pdfjsLib.getDocument({ data: pdfBuffer, password: pwd });
+    const pdf = await pdfTask.promise;
+
+    // 2. 검증 통과 시 페이지 캔버스 해독 렌더링 후 깨끗한 무암호 PDF 생성
+    const totalPages = pdf.numPages;
+    let doc: jsPDF | null = null;
+
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 2.0 });
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      if (context) {
+        await page.render({ canvasContext: context, viewport, canvas }).promise;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const orientation = viewport.width > viewport.height ? 'landscape' : 'portrait';
+
+        if (i === 1) {
+          doc = new jsPDF({
+            orientation,
+            unit: 'pt',
+            format: [viewport.width, viewport.height],
+          });
+          doc.addImage(imgData, 'JPEG', 0, 0, viewport.width, viewport.height);
+        } else if (doc) {
+          doc.addPage([viewport.width, viewport.height], orientation);
+          doc.setPage(i);
+          doc.addImage(imgData, 'JPEG', 0, 0, viewport.width, viewport.height);
+        }
+      }
+    }
+
+    if (!doc) {
+      throw new Error('PDF 해독 렌더링 실패');
+    }
+
+    const arrayBuffer = doc.output('arraybuffer');
+    return new Uint8Array(arrayBuffer);
   } catch (err) {
-    throw new Error('PDF 암호 해제에 실패했습니다. 암호가 일치하는지 확인해 주세요.');
+    throw new Error('❌ 비밀번호가 올바르지 않습니다. 정확한 PDF 암호를 입력해 주세요.');
   }
 }
