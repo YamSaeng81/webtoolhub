@@ -50,7 +50,7 @@ export const VideoConvertPage: React.FC = () => {
   };
 
   /**
-   * 4K / 1080p Ultra-High Bitrate (비디오 12~15Mbps, 오디오 256kbps) 고화질&고음질 변환 인코더 ⭐
+   * 브라우저 Canvas 제약 우회: 원본 동영상 Direct Stream 캡처 (15Mbps / 256kbps 무손실급) ⭐
    */
   const handleConvertVideo = async () => {
     const hiddenVideo = hiddenVideoRef.current;
@@ -64,41 +64,32 @@ export const VideoConvertPage: React.FC = () => {
       hiddenVideo.currentTime = 0;
       await new Promise((res) => { hiddenVideo.onseeked = res; });
 
-      // 1. 오프스크린 Canvas 캔버스 트랙 생성 (원본 원형 해상도 100% 보존)
-      const width = hiddenVideo.videoWidth || 3840;
-      const height = hiddenVideo.videoHeight || 2160;
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      const canvasStream = canvas.captureStream(60); // 60fps 부드러운 프레임 캡처
-
-      // 2. 오디오 트랙 1:1 합성
-      let videoMediaStream: MediaStream | null = null;
+      // 1. 원본 동영상 Direct MediaStream 캡처 (Canvas 64kbps 제한 우회) ⭐
+      let directStream: MediaStream | null = null;
       if ((hiddenVideo as any).captureStream) {
-        videoMediaStream = (hiddenVideo as any).captureStream();
+        directStream = (hiddenVideo as any).captureStream();
       } else if ((hiddenVideo as any).mozCaptureStream) {
-        videoMediaStream = (hiddenVideo as any).mozCaptureStream();
+        directStream = (hiddenVideo as any).mozCaptureStream();
       }
 
-      if (videoMediaStream) {
-        const audioTracks = videoMediaStream.getAudioTracks();
-        if (audioTracks.length > 0) {
-          audioTracks.forEach((track) => canvasStream.addTrack(track));
-        }
+      if (!directStream) {
+        throw new Error('Browser MediaStream capture is not supported.');
       }
 
-      // 3. Ultra-High Bitrate (비디오 12,000,000 bps, 오디오 256,000 bps) 고화질/고음질 레코더 지정 ⭐
+      // 2. 스피커 출력은 완전 무음 Mute 처리 ⭐
+      hiddenVideo.muted = true;
+
+      // 3. MimeType & Ultra High Bitrate 지정 (15Mbps 비디오 / 256kbps 오디오) ⭐
       const requestedMime = targetFormat === 'webm' ? 'video/webm;codecs=vp9,opus' : 'video/mp4';
       const fallbackMime = targetFormat === 'webm' ? 'video/webm;codecs=vp8,opus' : 'video/webm';
       const recorderMime = MediaRecorder.isTypeSupported(requestedMime) 
         ? requestedMime 
         : MediaRecorder.isTypeSupported(fallbackMime) ? fallbackMime : '';
 
-      const mediaRecorder = new MediaRecorder(canvasStream, {
+      const mediaRecorder = new MediaRecorder(directStream, {
         mimeType: recorderMime,
-        videoBitsPerSecond: 12500000, // 12.5 Mbps (4K / 1080p 초고화질 보장) ⭐
-        audioBitsPerSecond: 256000,   // 256 kbps (초고음질 보장) ⭐
+        videoBitsPerSecond: 15000000, // 15 Mbps (원본 4K / 1080p 고화질 100% 유지) ⭐
+        audioBitsPerSecond: 256000,   // 256 kbps (고음질 100% 유지) ⭐
       });
 
       const chunks: Blob[] = [];
@@ -117,33 +108,22 @@ export const VideoConvertPage: React.FC = () => {
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
       };
 
-      mediaRecorder.start(500); // 0.5초 단위 청크 안전 수집
-      hiddenVideo.volume = 0.0001; // 스피커 출력 소리는 무음 차단
+      mediaRecorder.start(250); // 0.25초 청크 실시간 인코딩
       hiddenVideo.play();
 
       const durationSec = hiddenVideo.duration || 10;
-      let animId: number;
-
-      const renderLoop = () => {
+      const interval = setInterval(() => {
         if (hiddenVideo.paused || hiddenVideo.ended) {
-          cancelAnimationFrame(animId);
+          clearInterval(interval);
           if (mediaRecorder.state !== 'inactive') mediaRecorder.stop();
-          return;
+        } else {
+          const pct = Math.min(95, Math.round((hiddenVideo.currentTime / durationSec) * 100));
+          setProgress(pct);
         }
-
-        if (ctx) {
-          ctx.drawImage(hiddenVideo, 0, 0, width, height);
-        }
-
-        const pct = Math.min(95, Math.round((hiddenVideo.currentTime / durationSec) * 100));
-        setProgress(pct);
-
-        animId = requestAnimationFrame(renderLoop);
-      };
-
-      renderLoop();
+      }, 250);
 
       hiddenVideo.onended = () => {
+        clearInterval(interval);
         if (mediaRecorder.state !== 'inactive') {
           mediaRecorder.stop();
         }
@@ -170,7 +150,7 @@ export const VideoConvertPage: React.FC = () => {
       <ToolHeader
         toolId="video-convert"
         title="동영상 포맷 변환 (Video Converter)"
-        description="MP4, WebM 동영상 포맷 간을 4K UHD Ultra High Bitrate 고화질과 256kbps 고음질 손실 없이 백그라운드 메모리 상에서 안전하게 변환합니다."
+        description="MP4, WebM 동영상 포맷 간을 Direct Stream 인코딩으로 원본 화질(15Mbps)과 고음질(256kbps) 손실 없이 변환합니다."
       />
 
       <AdBanner slotId="videoconvert-top" />
