@@ -55,13 +55,21 @@ export interface TranslationDictionary {
   textCategoryDesc?: string;
   communityCategoryDesc?: string;
 
-  // PDF 툴 다국어 공통 키 ⭐
+  // PDF & 미디어 툴 다국어 키 ⭐
   toolPdfMergeTitle: string;
   toolPdfMergeDesc: string;
   toolPdfCompressTitle: string;
   toolPdfCompressDesc: string;
   toolPdfRotateTitle: string;
   toolPdfRotateDesc: string;
+
+  // 신규 미디어 툴 3종 키 ⭐
+  toolVideoCutterTitle: string;
+  toolVideoCutterDesc: string;
+  toolAudioConvertTitle: string;
+  toolAudioConvertDesc: string;
+  toolVideoConvertTitle: string;
+  toolVideoConvertDesc: string;
 }
 
 export const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
@@ -103,7 +111,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     communityCategoryTitle: '소통 & 커뮤니티',
     pdfCategoryDesc: 'PDF 합치기, 용량 축소, 회전, 변환, OCR, 암호화 도구 모음',
     imageCategoryDesc: '이미지 압축, 포맷 변환, 크기 조절 및 파비콘 패키지 생성',
-    mediaCategoryDesc: '동영상 MP3 추출 및 오디오 구간 정밀 커팅',
+    mediaCategoryDesc: '동영상 구간 자르기, 포맷 변환, MP3 추출 및 오디오 편집',
     textCategoryDesc: '글자수 세기, JSON Pretty 정렬 및 문법 검증, Text Diff 비교',
     communityCategoryDesc: '자유로운 신규 툴 제안 및 개선 피드백 게시판',
     selectFile: '파일 선택',
@@ -132,6 +140,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     toolPdfCompressDesc: '고화질 PDF 문서의 해상도를 유지하면서 파일 용량을 수십 % 최적화 압축합니다.',
     toolPdfRotateTitle: 'PDF 페이지 회전 (PDF Rotate)',
     toolPdfRotateDesc: 'PDF 문서의 각 페이지를 시각적으로 확인하며 90도, 180도, 270도 원하는 대로 회전합니다.',
+
+    toolVideoCutterTitle: '동영상 구간 자르기 (Video Cutter)',
+    toolVideoCutterDesc: 'MP4, WebM, MOV 동영상에서 원하는 시작/종료 시각을 지정하여 정밀 자르기 다운로드합니다.',
+    toolAudioConvertTitle: '오디오 포맷 변환 (Audio Converter)',
+    toolAudioConvertDesc: 'MP3, WAV, OGG 오디오 파일 간의 형식을 0.1초 만에 상호 변환합니다.',
+    toolVideoConvertTitle: '동영상 포맷 변환 (Video Converter)',
+    toolVideoConvertDesc: 'MP4, WebM 동영상 간의 포맷을 서버 업로드 없이 브라우저에서 안전하게 변환합니다.',
   },
   en: {
     siteTitle: 'WebToolHub',
@@ -163,7 +178,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     communityCategoryTitle: 'Community & Feedback',
     pdfCategoryDesc: 'PDF Merge, Compress, Rotate, Convert, OCR & Protect tools',
     imageCategoryDesc: 'Compress, Convert, Resize & Favicon generator',
-    mediaCategoryDesc: 'Video MP3 extractor and Audio cutter',
+    mediaCategoryDesc: 'Video trimmer, converter, MP3 extractor and audio tools',
     textCategoryDesc: 'Character Counter, JSON Formatter & Text Diff',
     communityCategoryDesc: 'Feature requests & feedback board',
     selectFile: 'Select File',
@@ -192,6 +207,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     toolPdfCompressDesc: 'Reduce PDF file size significantly while preserving high document quality.',
     toolPdfRotateTitle: 'Rotate PDF Pages',
     toolPdfRotateDesc: 'Visually rotate individual PDF pages by 90, 180, or 270 degrees.',
+
+    toolVideoCutterTitle: 'Trim / Cut Video Segment',
+    toolVideoCutterDesc: 'Trim MP4, WebM, MOV videos precisely by selecting start and end times.',
+    toolAudioConvertTitle: 'Convert Audio Format',
+    toolAudioConvertDesc: 'Convert audio files between MP3, WAV, OGG formats in seconds.',
+    toolVideoConvertTitle: 'Convert Video Format',
+    toolVideoConvertDesc: 'Convert video formats between MP4 and WebM safely in browser.',
   },
   es: {
     siteTitle: 'WebToolHub',
@@ -223,7 +245,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     communityCategoryTitle: 'Comunidad y Comentarios',
     pdfCategoryDesc: 'Herramientas para Combinar, Comprimir, Rotar, Convertir, OCR y Proteger PDF',
     imageCategoryDesc: 'Compresión, conversión, redimensión y generador de favicon',
-    mediaCategoryDesc: 'Extractor de MP3 de video y cortador de audio',
+    mediaCategoryDesc: 'Recortador de video, convertidor, extractor de MP3 y herramientas de audio',
     textCategoryDesc: 'Contador de caracteres, formateador JSON y comparador de texto',
     communityCategoryDesc: 'Tablero de comentarios y sugerencias',
     selectFile: 'Seleccionar Archivo',
@@ -252,6 +274,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     toolPdfCompressDesc: 'Reduzca el tamaño del archivo PDF preservando la alta calidad del documento.',
     toolPdfRotateTitle: 'Rotar páginas PDF',
     toolPdfRotateDesc: 'Rote visualmente páginas individuales de PDF 90, 180 o 270 grados.',
+
+    toolVideoCutterTitle: 'Recortar segmento de video',
+    toolVideoCutterDesc: 'Recorte videos MP4, WebM, MOV con precisión seleccionando inicio y fin.',
+    toolAudioConvertTitle: 'Convertir formato de audio',
+    toolAudioConvertDesc: 'Convierta archivos de audio entre formatos MP3, WAV, OGG en segundos.',
+    toolVideoConvertTitle: 'Convertir formato de video',
+    toolVideoConvertDesc: 'Convierta formatos de video entre MP4 y WebM de forma segura.',
   },
   zh: {
     siteTitle: 'WebToolHub',
@@ -283,7 +312,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     communityCategoryTitle: '社区与反馈',
     pdfCategoryDesc: 'PDF 合并、压缩、旋转、转换、OCR 和加密解密工具包',
     imageCategoryDesc: '图像压缩、格式转换、尺寸调整和 Favicon 生成器',
-    mediaCategoryDesc: '视频 MP3 提取和音频精确剪辑',
+    mediaCategoryDesc: '视频剪辑、格式转换、MP3 提取和音频编辑',
     textCategoryDesc: '字数统计、JSON 美化与验证、文本 Diff 对比',
     communityCategoryDesc: '功能建议与反馈交流板',
     selectFile: '选择文件',
@@ -312,6 +341,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     toolPdfCompressDesc: '在保持高质量的同时显著降低 PDF 文件大小。',
     toolPdfRotateTitle: '旋转 PDF 页面',
     toolPdfRotateDesc: '以可视化方式将单个 PDF 页面旋转 90度、180度 或 270度。',
+
+    toolVideoCutterTitle: '剪辑视频片段',
+    toolVideoCutterDesc: '通过选择开始和结束时间精确剪辑 MP4、WebM、MOV 视频。',
+    toolAudioConvertTitle: '转换音频格式',
+    toolAudioConvertDesc: '在几秒钟内于 MP3、WAV、OGG 格式之间转换音频文件。',
+    toolVideoConvertTitle: '转换视频格式',
+    toolVideoConvertDesc: '在浏览器中安全地在 MP4 和 WebM 之间转换视频格式。',
   },
   ja: {
     siteTitle: 'WebToolHub',
@@ -343,7 +379,7 @@ export const translations: Record<Language, TranslationDictionary> = {
     communityCategoryTitle: 'コミュニティ＆フィードバック',
     pdfCategoryDesc: 'PDF結合、容量削減、回転、変換、OCR、保護ツールセット',
     imageCategoryDesc: '画像圧縮、フォーマット変換、サイズ調整＆ファビコン生成',
-    mediaCategoryDesc: '動画MP3抽出および音声精密カット',
+    mediaCategoryDesc: '動画切り取り、フォーマット変換、MP3抽出および音声編集',
     textCategoryDesc: '文字数カウント、JSON整列＆検証、テキストDiff比較',
     communityCategoryDesc: 'ご意見・新機能リクエスト掲示板',
     selectFile: 'ファイルを選択',
@@ -372,6 +408,13 @@ export const translations: Record<Language, TranslationDictionary> = {
     toolPdfCompressDesc: '高品質を維持しながらPDFファイルの容量を圧縮・最適化します。',
     toolPdfRotateTitle: 'PDFページを回転 (PDF Rotate)',
     toolPdfRotateDesc: '各ページを視覚的に確認しながら90度、180度、270度に回転させます。',
+
+    toolVideoCutterTitle: '動画区間カット',
+    toolVideoCutterDesc: 'MP4、WebM、MOV動画から開始・終了時間を指定して正確にトリミング。',
+    toolAudioConvertTitle: '音声フォーマット変換',
+    toolAudioConvertDesc: 'MP3、WAV、OGG音声ファイル間を瞬時に相互変換します。',
+    toolVideoConvertTitle: '動画フォーマット変換',
+    toolVideoConvertDesc: 'MP4、WebM動画フォーマットをブラウザ内で安全に相互変換。',
   },
 };
 

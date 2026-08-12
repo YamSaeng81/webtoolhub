@@ -21,6 +21,8 @@ import {
   Code,
   FileCode,
   MessageSquare,
+  Film,
+  Video,
   Shield,
   Zap,
   Lock,
@@ -58,6 +60,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
       case 'Maximize2': return <Maximize2 size={24} />;
       case 'Sparkles': return <Sparkles size={24} />;
       case 'Music': return <Music size={24} />;
+      case 'Film': return <Film size={24} />;
+      case 'Video': return <Video size={24} />;
       case 'AlignLeft': return <AlignLeft size={24} />;
       case 'Code': return <Code size={24} />;
       case 'FileCode': return <FileCode size={24} />;
@@ -180,6 +184,23 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
                         }}
                       >
                         Popular
+                      </span>
+                    )}
+                    {tool.isNew && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '1rem',
+                          right: '1rem',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: '#ffffff',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: 'var(--radius-full)',
+                        }}
+                      >
+                        NEW
                       </span>
                     )}
                     <div className="tool-icon">{renderIcon(tool.iconName)}</div>

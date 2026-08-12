@@ -23,6 +23,9 @@ import { FaviconGeneratorPage } from './pages/image/FaviconGeneratorPage';
 
 import { VideoToMp3Page } from './pages/media/VideoToMp3Page';
 import { AudioCutterPage } from './pages/media/AudioCutterPage';
+import { VideoCutterPage } from './pages/media/VideoCutterPage';
+import { AudioConvertPage } from './pages/media/AudioConvertPage';
+import { VideoConvertPage } from './pages/media/VideoConvertPage';
 
 import { TextCounterPage } from './pages/text/TextCounterPage';
 import { JsonFormatterPage } from './pages/text/JsonFormatterPage';
@@ -65,7 +68,7 @@ export default function App() {
       case '/':
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
 
-      // 📄 PDF Tools (신규 3종 포함 총 9개 라우트) ⭐
+      // 📄 PDF Tools (총 9개 라우트)
       case '/pdf/merge':
         return <MergePdfPage />;
       case '/pdf/compress':
@@ -95,11 +98,17 @@ export default function App() {
       case '/image/favicon-generator':
         return <FaviconGeneratorPage />;
 
-      // 🎬 MEDIA
+      // 🎬 MEDIA (신규 3종 포함 총 5개 라우트) ⭐
       case '/media/video-to-mp3':
         return <VideoToMp3Page />;
       case '/media/audio-cutter':
         return <AudioCutterPage />;
+      case '/media/video-cutter':
+        return <VideoCutterPage />;
+      case '/media/audio-convert':
+        return <AudioConvertPage />;
+      case '/media/video-convert':
+        return <VideoConvertPage />;
 
       // 🔤 TEXT
       case '/text/counter':

@@ -20,6 +20,8 @@ import {
   Code,
   FileCode,
   MessageSquare,
+  Film,
+  Video,
 } from 'lucide-react';
 import type { ToolCategory } from '../../types';
 
@@ -31,7 +33,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => {
   const { language, t } = useLanguage();
 
-  // 모든 툴의 아이콘 1:1 고유 렌더링 (중복 0%) ⭐
   const renderIcon = (iconName: string) => {
     switch (iconName) {
       case 'Layers': return <Layers size={18} />;
@@ -47,6 +48,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate }) => 
       case 'Maximize2': return <Maximize2 size={18} />;
       case 'Sparkles': return <Sparkles size={18} />;
       case 'Music': return <Music size={18} />;
+      case 'Film': return <Film size={18} />;
+      case 'Video': return <Video size={18} />;
       case 'AlignLeft': return <AlignLeft size={18} />;
       case 'Code': return <Code size={18} />;
       case 'FileCode': return <FileCode size={18} />;

@@ -1,8 +1,7 @@
 import type { ToolItem } from '../types';
 
 export const ALL_TOOLS: ToolItem[] = [
-  // 📄 PDF Tools (사용자 지정 순서 총 9종) ⭐
-  // 1. PDF 합치기 (pdf/merge)
+  // 📄 PDF Tools (총 9종)
   {
     id: 'pdf-merge',
     category: 'pdf',
@@ -27,8 +26,6 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf merge', 'pdf 합치기', 'pdf 병합'],
   },
-
-  // 2. PDF 용량 줄이기 (pdf/compress)
   {
     id: 'pdf-compress',
     category: 'pdf',
@@ -53,8 +50,6 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf compress', 'pdf 용량 줄이기', 'pdf 압축'],
   },
-
-  // 3. PDF 페이지 추출 (pdf/extract)
   {
     id: 'extract-pdf',
     category: 'pdf',
@@ -78,8 +73,6 @@ export const ALL_TOOLS: ToolItem[] = [
     path: '/pdf/extract',
     metaKeywords: ['extract pdf', 'pdf 페이지 추출', 'pdf 떼어내기'],
   },
-
-  // 4. 이미지를 PDF로 변환 (pdf/image-to-pdf)
   {
     id: 'image-to-pdf',
     category: 'pdf',
@@ -90,7 +83,7 @@ export const ALL_TOOLS: ToolItem[] = [
       en: 'Convert Images to PDF',
       es: 'Convertir Imágenes a PDF',
       zh: '将图像转换为 PDF',
-      ja: '画像をPDFに変換',
+      ja: '画像をPDF에変換',
     },
     descriptionMap: {
       ko: 'JPG, PNG, WEBP 등의 사진 파일들을 하나의 고화질 PDF 파일로 합칩니다.',
@@ -104,8 +97,6 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['image to pdf', '이미지 pdf 변환', 'jpg pdf 변환'],
   },
-
-  // 5. PDF 페이지 회전 (pdf/rotate)
   {
     id: 'pdf-rotate',
     category: 'pdf',
@@ -127,11 +118,8 @@ export const ALL_TOOLS: ToolItem[] = [
     },
     iconName: 'RotateCw',
     path: '/pdf/rotate',
-    isNew: true,
     metaKeywords: ['pdf rotate', 'pdf 페이지 회전', 'pdf 돌리기'],
   },
-
-  // 6. PDF 암호 설정 & 해제 (pdf/protect)
   {
     id: 'pdf-protect',
     category: 'pdf',
@@ -155,8 +143,6 @@ export const ALL_TOOLS: ToolItem[] = [
     path: '/pdf/protect',
     metaKeywords: ['pdf protect', 'pdf 암호 설정', 'pdf 비밀번호 해제'],
   },
-
-  // 7. PDF를 이미지로 변환 (pdf/pdf-to-image)
   {
     id: 'pdf-to-image',
     category: 'pdf',
@@ -176,12 +162,10 @@ export const ALL_TOOLS: ToolItem[] = [
       zh: '将 PDF 的每一页转换为高质量 PNG 图像。',
       ja: 'PDFの各ページを高品質PNG画像に変換します。',
     },
-    iconName: 'Image',
+    iconName: 'FileImage',
     path: '/pdf/pdf-to-image',
     metaKeywords: ['pdf to image', 'pdf 이미지 변환', 'pdf png 변환'],
   },
-
-  // 8. PDF & 이미지 OCR 텍스트 추출 (pdf/ocr)
   {
     id: 'ocr-pdf',
     category: 'pdf',
@@ -206,8 +190,6 @@ export const ALL_TOOLS: ToolItem[] = [
     isPopular: true,
     metaKeywords: ['pdf ocr', 'pdf 글자 추출', '검색 가능한 pdf'],
   },
-
-  // 9. PDF 여백 자르기 (pdf/crop)
   {
     id: 'crop-pdf',
     category: 'pdf',
@@ -326,7 +308,7 @@ export const ALL_TOOLS: ToolItem[] = [
     metaKeywords: ['favicon generator', '파비콘 만들기'],
   },
 
-  // 🎬 MEDIA Tools (총 2종)
+  // 🎬 MEDIA Tools (총 5종 라인업으로 대확장) ⭐
   {
     id: 'video-to-mp3',
     category: 'media',
@@ -348,13 +330,14 @@ export const ALL_TOOLS: ToolItem[] = [
     },
     iconName: 'Music',
     path: '/media/video-to-mp3',
+    isPopular: true,
     metaKeywords: ['video to mp3', '동영상 mp3 추출'],
   },
   {
     id: 'audio-cutter',
     category: 'media',
     title: '오디오 / MP3 구간 자르기',
-    description: '음악 파일에서 원하는 시작/종료 시간 구간만 정확히 잘라내어 다운로드합니다.',
+    description: '음악 파일에서 원하는 시작/종료 시간 구간을 실시간 미리듣고 정확히 잘라내어 다운로드합니다.',
     titleMap: {
       ko: '오디오 구간 자르기',
       en: 'Audio Trimmer / Cutter',
@@ -363,15 +346,87 @@ export const ALL_TOOLS: ToolItem[] = [
       ja: '音声・MP3トリミング',
     },
     descriptionMap: {
-      ko: '음악 파일에서 원하는 시작/종료 시간 구간만 정확히 잘라내어 다운로드합니다.',
-      en: 'Trim audio files precisely by setting start & end timestamps.',
-      es: 'Recorte archivos de audio con precisión ajustando marcas de tiempo.',
-      zh: '通过精确设置开始和结束时间来剪辑音频文件。',
-      ja: '音声ファイルの開始・終了時間を指定して正確に切り取ります。',
+      ko: '음악 파일에서 원하는 시작/종료 시간 구간을 실시간 미리듣고 정확히 잘라내어 다운로드합니다.',
+      en: 'Trim audio files precisely by setting start & end timestamps with preview.',
+      es: 'Recorte archivos de audio con precisión escuchando la vista previa.',
+      zh: '通过精确设置开始和结束时间并预览来剪辑音频文件。',
+      ja: '音声ファイルの開始・終了時間をプレビュー確認しながら正確に切り取ります。',
     },
     iconName: 'Scissors',
     path: '/media/audio-cutter',
-    metaKeywords: ['audio cutter', 'mp3 자르기'],
+    metaKeywords: ['audio cutter', 'mp3 자르기', '음악 잘라내기'],
+  },
+  {
+    id: 'video-cutter',
+    category: 'media',
+    title: '동영상 구간 자르기 (Video Cutter)',
+    description: 'MP4, WebM 동영상에서 원하는 시작/종료 시각을 조절하여 구간 잘라내기 저장합니다.',
+    titleMap: {
+      ko: '동영상 구간 자르기',
+      en: 'Trim / Cut Video Segment',
+      es: 'Recortar segmento de video',
+      zh: '剪辑视频片段',
+      ja: '動画区間カット',
+    },
+    descriptionMap: {
+      ko: 'MP4, WebM 동영상에서 원하는 시작/종료 시각을 조절하여 구간 잘라내기 저장합니다.',
+      en: 'Trim MP4, WebM videos precisely by selecting start and end times in browser.',
+      es: 'Recorte videos MP4, WebM con precisión seleccionando inicio y fin.',
+      zh: '在浏览器中通过选择开始和结束时间精确剪辑 MP4、WebM 视频。',
+      ja: 'MP4、WebM動画から開始・終了時間を指定して正確にトリミング保存。',
+    },
+    iconName: 'Film',
+    path: '/media/video-cutter',
+    isNew: true,
+    metaKeywords: ['video cutter', '동영상 자르기', '동영상 편집'],
+  },
+  {
+    id: 'audio-convert',
+    category: 'media',
+    title: '오디오 포맷 변환 (Audio Converter)',
+    description: 'MP3, WAV, OGG 등 원하는 오디오 파일 포맷으로 0.1초 만에 무손실 변환합니다.',
+    titleMap: {
+      ko: '오디오 포맷 변환',
+      en: 'Convert Audio Format',
+      es: 'Convertir formato de audio',
+      zh: '转换音频格式',
+      ja: '音声フォーマット変換',
+    },
+    descriptionMap: {
+      ko: 'MP3, WAV, OGG 등 원하는 오디오 파일 포맷으로 0.1초 만에 무손실 변환합니다.',
+      en: 'Convert between MP3, WAV, OGG audio formats instantly in your browser.',
+      es: 'Convierta entre formatos de audio MP3, WAV, OGG al instante.',
+      zh: '在 MP3、WAV、OGG 音频格式之间即时无损转换。',
+      ja: 'MP3、WAV、OGGなどの音声フォーマット間を瞬時に無劣化変換。',
+    },
+    iconName: 'RefreshCcw',
+    path: '/media/audio-convert',
+    isNew: true,
+    metaKeywords: ['audio convert', '오디오 포맷 변환', 'mp3 wav 변환'],
+  },
+  {
+    id: 'video-convert',
+    category: 'media',
+    title: '동영상 포맷 변환 (Video Converter)',
+    description: 'MP4, WebM 동영상 파일 간의 포맷을 서버 업로드 없이 브라우저에서 안전하게 상호 변환합니다.',
+    titleMap: {
+      ko: '동영상 포맷 변환',
+      en: 'Convert Video Format',
+      es: 'Convertir formato de video',
+      zh: '转换视频格式',
+      ja: '動画フォーマット変換',
+    },
+    descriptionMap: {
+      ko: 'MP4, WebM 동영상 파일 간의 포맷을 서버 업로드 없이 브라우저에서 안전하게 상호 변환합니다.',
+      en: 'Convert video formats between MP4 and WebM safely inside browser.',
+      es: 'Convierta formatos de video entre MP4 y WebM de forma segura.',
+      zh: '在浏览器中安全地在 MP4 和 WebM 视频格式之间相互转换。',
+      ja: 'MP4、WebM動画フォーマットをブラウザ内で安全に相互変換。',
+    },
+    iconName: 'Video',
+    path: '/media/video-convert',
+    isNew: true,
+    metaKeywords: ['video convert', '동영상 포맷 변환', 'mp4 webm 변환'],
   },
 
   // 🔤 TEXT Tools (총 3종)
@@ -438,7 +493,7 @@ export const ALL_TOOLS: ToolItem[] = [
       en: 'Compare two text strings and highlight added/removed line differences.',
       es: 'Compare dos textos y resalte las diferencias de líneas agregadas/eliminadas.',
       zh: '对比两段文本并以颜色高亮高亮显示增加与删除的差异。',
-      ja: '2つのテキストの差異(追加・削除部分)をハイライト比較。',
+      ja: '2つのテキストの差異(追加・삭제部分)를 ハイライト比較。',
     },
     iconName: 'FileCode',
     path: '/text/diff',
