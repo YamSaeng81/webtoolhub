@@ -28,11 +28,30 @@ import { TextDiffPage } from './pages/text/TextDiffPage';
 import { FeedbackPage } from './pages/community/FeedbackPage';
 
 export default function App() {
-  const [currentPath, setCurrentPath] = useState<string>('/');
+  // 초기 로드 시 브라우저 주소창(location.pathname)을 읽어와 새로고침 시에도 유지되도록 구현
+  const [currentPath, setCurrentPath] = useState<string>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname) {
+      return window.location.pathname;
+    }
+    return '/';
+  });
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    // 페이지 라우팅 변경 시 통계 트래커(방문자 수 / PV) 실행
+    // 브라우저 뒤로가기/앞으로가기 및 F5 새로고침 감지
+    const handlePopState = () => {
+      setCurrentPath(window.location.pathname || '/');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    // 페이지 이동 시 주소창 URL 업데이트 및 통계 트래커 동시 실행
+    if (typeof window !== 'undefined' && window.location.pathname !== currentPath) {
+      window.history.pushState({}, '', currentPath);
+    }
     trackPageView(currentPath);
     window.scrollTo(0, 0);
   }, [currentPath]);
