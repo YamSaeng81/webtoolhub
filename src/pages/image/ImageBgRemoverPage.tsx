@@ -6,7 +6,8 @@ import { AdBanner } from '../../components/ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
-import { Download, RefreshCw, Scissors, Sliders } from 'lucide-react';
+import { Download, RefreshCw, Scissors, Sparkles } from 'lucide-react';
+import { removeBackground } from '@imgly/background-removal';
 
 export const ImageBgRemoverPage: React.FC = () => {
   const { language, t } = useLanguage();
@@ -15,51 +16,38 @@ export const ImageBgRemoverPage: React.FC = () => {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const [tolerance, setTolerance] = useState<number>(30);
-  const smoothness = 2;
+  const [statusText, setStatusText] = useState<string>('AI 누끼 모델 로딩 중...');
 
   const labels = {
     ko: {
       selectTitle: '배경을 제거(누끼)할 이미지를 선택하세요 (PNG, JPG, WEBP)',
-      btnProcess: 'AI 배경 제거 (누끼 따기) 실행',
-      doneTitle: '배경 제거 완료!',
-      toleranceLabel: '배경 제거 민감도:',
-      smoothnessLabel: '테두리 부드럽게:',
+      btnProcess: 'AI 딥러닝 누끼 따기 실행',
+      doneTitle: 'AI 누끼 제거 완료!',
     },
     en: {
       selectTitle: 'Select image to remove background (PNG, JPG, WEBP)',
-      btnProcess: 'Remove Background',
-      doneTitle: 'Background Removed!',
-      toleranceLabel: 'Sensitivity Tolerance:',
-      smoothnessLabel: 'Edge Smoothness:',
+      btnProcess: 'Run AI Background Removal',
+      doneTitle: 'AI Background Removed!',
     },
     es: {
       selectTitle: 'Seleccione imagen para quitar fondo',
-      btnProcess: 'Quitar Fondo de Imagen',
-      doneTitle: '¡Fondo eliminado!',
-      toleranceLabel: 'Tolerancia de sensibilidad:',
-      smoothnessLabel: 'Suavizado de bordes:',
+      btnProcess: 'Ejecutar eliminación de fondo AI',
+      doneTitle: '¡Fondo eliminado por AI!',
     },
     zh: {
       selectTitle: '选择要抠图/抠背景的图像 (PNG, JPG, WEBP)',
-      btnProcess: '执行 AI 图像扣背景',
-      doneTitle: '背景消除完成！',
-      toleranceLabel: '扣图容差灵敏度：',
-      smoothnessLabel: '边缘平滑度：',
+      btnProcess: '执行 AI 深度抠图',
+      doneTitle: 'AI 抠图完成！',
     },
     ja: {
       selectTitle: '背景を削除(切り抜き)する画像を選択してください',
-      btnProcess: '背景削除(切り抜き)を実行',
-      doneTitle: '背景削除完了！',
-      toleranceLabel: '削除感度度:',
-      smoothnessLabel: 'エッジスムーズ度:',
+      btnProcess: 'AI背景切り抜きを実行',
+      doneTitle: 'AI背景削除完了！',
     },
   }[language] || {
     selectTitle: 'Select image to remove background',
-    btnProcess: 'Remove Background',
-    doneTitle: 'Background Removed!',
-    toleranceLabel: 'Sensitivity Tolerance:',
-    smoothnessLabel: 'Edge Smoothness:',
+    btnProcess: 'Run AI Background Removal',
+    doneTitle: 'AI Background Removed!',
   };
 
   const handleFileSelected = (files: File[]) => {
@@ -74,63 +62,36 @@ export const ImageBgRemoverPage: React.FC = () => {
   };
 
   /**
-   * 브라우저 100% 인메모리 Edge-Preserving Color Thresholding 배경 제거 ⭐
+   * ONNX WASM 딥러닝 AI 신경망 100% 브라우저 고정밀 누끼 따기 ⭐
    */
   const handleRemoveBackground = async () => {
-    if (!imageUrl || !file) return;
+    if (!file) return;
 
     setIsProcessing(true);
-    setProgress(15);
-    trackToolUsage('image-bg-remover', '이미지 배경 제거');
+    setProgress(10);
+    setStatusText('AI 딥러닝 비전 신경망 모델 분석 중...');
+    trackToolUsage('image-bg-remover', 'AI 이미지 배경 제거');
 
     try {
-      const img = new Image();
-      img.src = imageUrl;
-      await new Promise((res) => { img.onload = res; });
+      // ONNX WebAssembly 딥러닝 AI 비전 신경망 인퍼런스 실행 ⭐
+      const blob = await removeBackground(file, {
+        progress: (_key: string, current: number, total: number) => {
+          if (total > 0) {
+            const pct = Math.min(95, Math.round((current / total) * 100));
+            setProgress(pct);
+            setStatusText(`AI 딥러닝 신경망 처리 중... (${pct}%)`);
+          }
+        },
+      });
 
-      setProgress(40);
-
-      const canvas = document.createElement('canvas');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas context failed');
-
-      ctx.drawImage(img, 0, 0);
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imgData.data;
-
-      // 4개 모서리 픽셀의 샘플 배경색 추출
-      const cornerR = (data[0] + data[(canvas.width - 1) * 4] + data[(canvas.height - 1) * canvas.width * 4]) / 3;
-      const cornerG = (data[1] + data[(canvas.width - 1) * 4 + 1] + data[(canvas.height - 1) * canvas.width * 4 + 1]) / 3;
-      const cornerB = (data[2] + data[(canvas.width - 1) * 4 + 2] + data[(canvas.height - 1) * canvas.width * 4 + 2]) / 3;
-
-      const tol = tolerance * 2.5;
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-
-        // 모서리 배경색과의 유클리디안 거리 계산
-        const dist = Math.sqrt((r - cornerR) ** 2 + (g - cornerG) ** 2 + (b - cornerB) ** 2);
-
-        if (dist < tol) {
-          // 알파 채널 투명화
-          const alphaFactor = dist / tol;
-          data[i + 3] = Math.round(255 * (alphaFactor ** smoothness));
-        }
-      }
-
-      ctx.putImageData(imgData, 0, 0);
-
-      const transparentUrl = canvas.toDataURL('image/png');
-      setResultUrl(transparentUrl);
+      const url = URL.createObjectURL(blob);
+      setResultUrl(url);
       setProgress(100);
+      setStatusText('누끼 제거 완료!');
       setIsProcessing(false);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     } catch (err) {
-      alert(`Background removal failed: ${err instanceof Error ? err.message : String(err)}`);
+      alert(`AI 누끼 따기 처리 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`);
       setIsProcessing(false);
     }
   };
@@ -146,8 +107,8 @@ export const ImageBgRemoverPage: React.FC = () => {
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <ToolHeader
         toolId="image-bg-remover"
-        title="AI 이미지 배경 제거 / 누끼 따기 (Background Remover)"
-        description="서버 전송 0% 브라우저 메모리 상에서 이미지 배경을 0.1초 만에 깔끔하게 투명 처리(PNG)로 제거합니다."
+        title="AI 이미지 배경 제거 / 누끼 따기 (AI Background Remover)"
+        description="ONNX WASM 딥러닝 AI 비전 신경망 모델이 사람, 동물, 상품 피사체를 머리카락 한 올까지 정밀하게 100% 브라우저 메모리 상에서 잘라냅니다."
       />
 
       <AdBanner slotId="bgremover-top" />
@@ -155,12 +116,13 @@ export const ImageBgRemoverPage: React.FC = () => {
       {resultUrl && file ? (
         <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Scissors size={32} />
+            <Sparkles size={32} />
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{labels.doneTitle}</h2>
 
+          {/* 체커보드 투명 배경 누끼 완료 결과 미리보기 ⭐ */}
           <div style={{ padding: '1rem', background: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAIAAADF8_8oAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC1JREFUeNpiPHPmDAM2wMSAGzCC8v///wcnYGJAAUYGVw0gCzA2kAUYNwIMAA0zBC5c31E3AAAAAElFTkSuQmCC") repeat', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', maxWidth: '500px' }}>
-            <img src={resultUrl} alt="Background Removed" style={{ maxWidth: '100%', maxHeight: '350px', display: 'block' }} />
+            <img src={resultUrl} alt="AI Background Removed" style={{ maxWidth: '100%', maxHeight: '380px', display: 'block' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
@@ -196,24 +158,7 @@ export const ImageBgRemoverPage: React.FC = () => {
             </div>
           )}
 
-          <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
-                <span><Sliders size={14} /> {labels.toleranceLabel}</span>
-                <span>{tolerance}%</span>
-              </label>
-              <input
-                type="range"
-                min={10}
-                max={70}
-                value={tolerance}
-                onChange={(e) => setTolerance(Number(e.target.value))}
-                style={{ width: '100%', marginTop: '0.3rem' }}
-              />
-            </div>
-          </div>
-
-          {isProcessing && <ProgressBar progress={progress} statusText={t.processing} />}
+          {isProcessing && <ProgressBar progress={progress} statusText={statusText} />}
 
           <button
             className="btn-primary"
@@ -221,7 +166,7 @@ export const ImageBgRemoverPage: React.FC = () => {
             disabled={isProcessing}
             style={{ width: '100%', padding: '0.9rem', fontSize: '1.05rem' }}
           >
-            <Scissors size={18} /> {isProcessing ? t.processing : labels.btnProcess}
+            <Scissors size={18} /> {isProcessing ? statusText : labels.btnProcess}
           </button>
         </div>
       )}
