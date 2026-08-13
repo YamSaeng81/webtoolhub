@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
@@ -6,67 +6,91 @@ import { AdBanner } from '../../components/ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
-import { Download, RefreshCw, Film, Play } from 'lucide-react';
+import { Download, RefreshCw, Film, Play, Pause, Trash2, Sparkles } from 'lucide-react';
 import { GIFEncoder, quantize, applyPalette } from 'gifenc';
 
 export const GifMakerPage: React.FC = () => {
   const { language, t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [fps, setFps] = useState<number>(5);
-  const [gifWidth, setGifWidth] = useState<number>(400);
+  const [fps, setFps] = useState<number>(6); // 기본 6 FPS
+  const [gifWidth, setGifWidth] = useState<number>(400); // 기본 400px 너비
+  const [isPlaying, setIsPlaying] = useState<boolean>(true); // 미리보기 재생 여부
+  const [currentFrameIdx, setCurrentFrameIdx] = useState<number>(0);
+
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
 
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const loadedImagesRef = useRef<HTMLImageElement[]>([]);
+
   const labels = {
     ko: {
       selectTitle: 'GIF 애니메이션으로 만들 여러 장의 이미지를 선택하세요 (PNG, JPG, WEBP)',
-      btnMake: '고화질 GIF 애니메이션 짤 제작 실행',
+      btnMake: '고화질 GIF 파일 생성 및 다운로드',
       doneTitle: 'GIF 애니메이션 제작 완료!',
-      fpsLabel: '프레임 속도 (FPS):',
-      widthLabel: 'GIF 해상도 너비 (px):',
-      imagesCount: '선택된 프레임 이미지:',
+      fpsLabel: '실시간 프레임 속도 (FPS):',
+      widthLabel: '미리보기 해상도 너비 (px):',
+      imagesCount: '프레임 순서 관리:',
+      livePreviewTitle: '🎬 실시간 GIF 애니메이션 미리보기',
+      playBtn: '재생',
+      pauseBtn: '일시정지',
     },
     en: {
       selectTitle: 'Select multiple images to create GIF animation (PNG, JPG, WEBP)',
-      btnMake: 'Generate Animated GIF',
+      btnMake: 'Generate & Download GIF File',
       doneTitle: 'GIF Animation Created!',
-      fpsLabel: 'Frame Rate (FPS):',
-      widthLabel: 'GIF Resolution Width (px):',
-      imagesCount: 'Selected Frame Images:',
+      fpsLabel: 'Live Frame Rate (FPS):',
+      widthLabel: 'Preview Resolution Width (px):',
+      imagesCount: 'Frame Sequence Management:',
+      livePreviewTitle: '🎬 Live GIF Animation Preview',
+      playBtn: 'Play',
+      pauseBtn: 'Pause',
     },
     es: {
       selectTitle: 'Seleccione varias imágenes para crear animación GIF',
-      btnMake: 'Generar GIF Animado',
+      btnMake: 'Generar y Descargar Archivo GIF',
       doneTitle: '¡Animación GIF Creada!',
-      fpsLabel: 'Velocidad de cuadro (FPS):',
-      widthLabel: 'Ancho de resolución GIF (px):',
-      imagesCount: 'Imágenes de cuadro seleccionadas:',
+      fpsLabel: 'Velocidad de cuadro en vivo (FPS):',
+      widthLabel: 'Ancho de vista previa (px):',
+      imagesCount: 'Gestión de secuencia:',
+      livePreviewTitle: '🎬 Vista previa de animación GIF en vivo',
+      playBtn: 'Reproducir',
+      pauseBtn: 'Pausar',
     },
     zh: {
       selectTitle: '选择多张图像制作 GIF 动画 (PNG, JPG, WEBP)',
-      btnMake: '生成高清 GIF 动图',
+      btnMake: '生成并下载 GIF 文件',
       doneTitle: 'GIF 动图制作完成！',
-      fpsLabel: '帧率 (FPS)：',
-      widthLabel: 'GIF 分辨率宽度 (px)：',
-      imagesCount: '已选帧图像：',
+      fpsLabel: '实时帧率 (FPS)：',
+      widthLabel: '预览分辨率宽度 (px)：',
+      imagesCount: '帧顺序管理：',
+      livePreviewTitle: '🎬 实时 GIF 动画预览',
+      playBtn: '播放',
+      pauseBtn: '暂停',
     },
     ja: {
       selectTitle: 'GIFアニメーションを作成する複数の画像を選択してください',
-      btnMake: '高品質GIFアニメーションを作成',
+      btnMake: '高品質GIFファイルを生成＆ダウンロード',
       doneTitle: 'GIFアニメーション作成完了！',
-      fpsLabel: 'フレームレート (FPS):',
-      widthLabel: 'GIF解像度幅 (px):',
-      imagesCount: '選択されたフレーム画像:',
+      fpsLabel: 'リアルタイムフレームレート (FPS):',
+      widthLabel: 'プレビュー解像度幅 (px):',
+      imagesCount: 'フレーム順序管理:',
+      livePreviewTitle: '🎬 リアルタイムGIFアニメーションプレビュー',
+      playBtn: '再生',
+      pauseBtn: '一時停止',
     },
   }[language] || {
     selectTitle: 'Select multiple images to create GIF animation',
-    btnMake: 'Generate Animated GIF',
+    btnMake: 'Generate & Download GIF File',
     doneTitle: 'GIF Animation Created!',
-    fpsLabel: 'Frame Rate (FPS):',
-    widthLabel: 'GIF Resolution Width (px):',
-    imagesCount: 'Selected Frame Images:',
+    fpsLabel: 'Live Frame Rate (FPS):',
+    widthLabel: 'Preview Resolution Width (px):',
+    imagesCount: 'Frame Sequence Management:',
+    livePreviewTitle: '🎬 Live GIF Animation Preview',
+    playBtn: 'Play',
+    pauseBtn: 'Pause',
   };
 
   const handleFilesSelected = (selectedFiles: File[]) => {
@@ -75,16 +99,94 @@ export const GifMakerPage: React.FC = () => {
       alert('이미지 파일만 선택이 가능합니다.');
       return;
     }
-    setFiles(validImages);
-    setPreviews(validImages.map((f) => URL.createObjectURL(f)));
+    const newPreviews = validImages.map((f) => URL.createObjectURL(f));
+    setFiles((prev) => [...prev, ...validImages]);
+    setPreviews((prev) => [...prev, ...newPreviews]);
     setResultUrl(null);
   };
 
   /**
-   * pure JS gifenc 100% 브라우저 메모리 고화질 GIF 렌더링 ⭐
+   * 프레임 이미지 객체 로딩 및 캐싱 ⭐
+   */
+  useEffect(() => {
+    let isCancelled = false;
+    const loadImages = async () => {
+      const imgs: HTMLImageElement[] = [];
+      for (const src of previews) {
+        const img = new Image();
+        img.src = src;
+        await new Promise((res) => { img.onload = res; });
+        if (!isCancelled) imgs.push(img);
+      }
+      if (!isCancelled) {
+        loadedImagesRef.current = imgs;
+      }
+    };
+
+    if (previews.length > 0) {
+      loadImages();
+    } else {
+      loadedImagesRef.current = [];
+    }
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [previews]);
+
+  /**
+   * 실시간 Canvas 미리보기 렌더링 루프 (FPS & 해상도 너비 연동) ⭐
+   */
+  useEffect(() => {
+    if (previews.length === 0 || !isPlaying) return;
+
+    const intervalMs = Math.round(1000 / fps);
+    const timer = setInterval(() => {
+      setCurrentFrameIdx((prevIdx) => {
+        const nextIdx = (prevIdx + 1) % previews.length;
+        return nextIdx;
+      });
+    }, intervalMs);
+
+    return () => clearInterval(timer);
+  }, [previews.length, fps, isPlaying]);
+
+  /**
+   * currentFrameIdx 또는 gifWidth 변경 시 캔버스에 그리기 ⭐
+   */
+  useEffect(() => {
+    const canvas = previewCanvasRef.current;
+    const imgs = loadedImagesRef.current;
+    if (!canvas || imgs.length === 0 || !imgs[currentFrameIdx]) return;
+
+    const currentImg = imgs[currentFrameIdx];
+    const targetWidth = gifWidth;
+    const targetHeight = Math.round((currentImg.height / currentImg.width) * targetWidth);
+
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, targetWidth, targetHeight);
+      ctx.drawImage(currentImg, 0, 0, targetWidth, targetHeight);
+    }
+  }, [currentFrameIdx, gifWidth, previews.length]);
+
+  const handleRemoveFrame = (indexToRemove: number) => {
+    setFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    setPreviews((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+    if (currentFrameIdx >= previews.length - 1) {
+      setCurrentFrameIdx(0);
+    }
+    setResultUrl(null);
+  };
+
+  /**
+   * 고화질 GIF 애니메이션 최종 파일 인코딩 및 다운로드 ⭐
    */
   const handleMakeGif = async () => {
-    if (files.length === 0) return;
+    if (previews.length === 0) return;
 
     setIsProcessing(true);
     setProgress(10);
@@ -94,18 +196,8 @@ export const GifMakerPage: React.FC = () => {
       const delayMs = Math.round(1000 / fps);
       const encoder = GIFEncoder();
 
-      // 프레임 이미지들 로드
-      const loadedImages: HTMLImageElement[] = [];
-      for (let i = 0; i < previews.length; i++) {
-        const img = new Image();
-        img.src = previews[i];
-        await new Promise((res) => { img.onload = res; });
-        loadedImages.push(img);
-        setProgress(10 + Math.round((i / previews.length) * 30));
-      }
-
-      // 첫 번째 이미지 비율로 높이 자동 계산
-      const firstImg = loadedImages[0];
+      const imgs = loadedImagesRef.current;
+      const firstImg = imgs[0];
       const targetWidth = gifWidth;
       const targetHeight = Math.round((firstImg.height / firstImg.width) * targetWidth);
 
@@ -116,9 +208,9 @@ export const GifMakerPage: React.FC = () => {
 
       if (!ctx) throw new Error('Canvas context failed');
 
-      for (let i = 0; i < loadedImages.length; i++) {
+      for (let i = 0; i < imgs.length; i++) {
         ctx.clearRect(0, 0, targetWidth, targetHeight);
-        ctx.drawImage(loadedImages[i], 0, 0, targetWidth, targetHeight);
+        ctx.drawImage(imgs[i], 0, 0, targetWidth, targetHeight);
 
         const imgData = ctx.getImageData(0, 0, targetWidth, targetHeight);
         const palette = quantize(imgData.data, 256);
@@ -129,7 +221,7 @@ export const GifMakerPage: React.FC = () => {
           delay: delayMs,
         });
 
-        const pct = 40 + Math.round((i / loadedImages.length) * 55);
+        const pct = 10 + Math.round(((i + 1) / imgs.length) * 85);
         setProgress(pct);
       }
 
@@ -153,6 +245,7 @@ export const GifMakerPage: React.FC = () => {
     setPreviews([]);
     setResultUrl(null);
     setProgress(0);
+    setCurrentFrameIdx(0);
   };
 
   return (
@@ -160,26 +253,29 @@ export const GifMakerPage: React.FC = () => {
       <ToolHeader
         toolId="media-gif-maker"
         title="GIF 애니메이션 짤 제작기 (GIF Maker)"
-        description="여러 장의 이미지(PNG, JPG, WEBP)를 프레임 속도와 해상도를 조절하여 고화질 GIF 애니메이션으로 제작합니다."
+        description="여러 장의 이미지를 추가하고 프레임 속도(FPS)와 GIF 해상도 크기 변화에 따른 실시간 애니메이션 미리보기를 보면서 GIF 짤을 즉시 제작하세요."
       />
 
       <AdBanner slotId="gifmaker-top" />
 
-      {resultUrl && files.length > 0 ? (
+      {resultUrl ? (
         <div className="glass-panel" style={{ padding: '2.5rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
           <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Film size={32} />
+            <Sparkles size={32} />
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>{labels.doneTitle}</h2>
 
           <div style={{ padding: '0.75rem', background: '#000', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-            <img src={resultUrl} alt="GIF Result" style={{ maxWidth: '100%', maxHeight: '350px', borderRadius: 'var(--radius-sm)' }} />
+            <img src={resultUrl} alt="GIF Result" style={{ maxWidth: '100%', maxHeight: '380px', borderRadius: 'var(--radius-sm)' }} />
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center', marginTop: '0.5rem' }}>
-            <a href={resultUrl} download={`animation_${Date.now()}.gif`} className="btn-primary">
-              <Download size={18} /> {t.download} .GIF
+            <a href={resultUrl} download={`webtoolhub_gif_${Date.now()}.gif`} className="btn-primary">
+              <Download size={18} /> {t.download} .GIF 파일
             </a>
+            <button onClick={() => setResultUrl(null)} className="btn-secondary">
+              <Film size={18} /> 옵션 수정하기
+            </button>
             <button onClick={handleReset} className="btn-secondary">
               <RefreshCw size={18} /> {t.reset}
             </button>
@@ -195,34 +291,41 @@ export const GifMakerPage: React.FC = () => {
       ) : (
         <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                {labels.imagesCount} {files.length}장
-              </h3>
-            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              {labels.livePreviewTitle} ({previews.length} 프레임)
+            </h3>
             <button onClick={handleReset} className="btn-secondary" style={{ fontSize: '0.8rem' }}>
               {t.reset}
             </button>
           </div>
 
-          {/* 프레임 미리보기 갤러리 */}
-          <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-            {previews.map((src, idx) => (
-              <div key={idx} style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-                <img src={src} alt={`Frame ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <span style={{ position: 'absolute', bottom: '4px', right: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>
-                  #{idx + 1}
-                </span>
-              </div>
-            ))}
+          {/* ⭐ 실시간 GIF 애니메이션 Canvas 미리보기 패널 ⭐ */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <div style={{ padding: '0.5rem', background: '#000', borderRadius: 'var(--radius-md)', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxShadow: 'var(--card-shadow)', maxWidth: '100%', overflow: 'hidden' }}>
+              <canvas ref={previewCanvasRef} style={{ display: 'block', maxWidth: '100%', maxHeight: '400px' }} />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => setIsPlaying(!isPlaying)}
+                className="btn-secondary"
+                style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}
+              >
+                {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                {isPlaying ? labels.pauseBtn : labels.playBtn}
+              </button>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                프레임: #{currentFrameIdx + 1} / {previews.length}
+              </span>
+            </div>
           </div>
 
-          {/* FPS 및 GIF 해상도 설정 */}
-          <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+          {/* ⭐ 실시간 조절 옵션 슬라이더 ⭐ */}
+          <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
                 <span>{labels.fpsLabel}</span>
-                <span>{fps} FPS</span>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{fps} FPS</span>
               </label>
               <input
                 type="range"
@@ -230,24 +333,50 @@ export const GifMakerPage: React.FC = () => {
                 max={20}
                 value={fps}
                 onChange={(e) => setFps(Number(e.target.value))}
-                style={{ width: '100%', marginTop: '0.3rem' }}
+                style={{ width: '100%', marginTop: '0.4rem' }}
               />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>슬라이더 조절 시 미리보기 재생 속도가 실시간 반영됩니다.</span>
             </div>
 
             <div>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
+              <label style={{ fontSize: '0.88rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
                 <span>{labels.widthLabel}</span>
-                <span>{gifWidth}px</span>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{gifWidth}px</span>
               </label>
               <input
                 type="range"
                 min={200}
                 max={800}
-                step={50}
+                step={20}
                 value={gifWidth}
                 onChange={(e) => setGifWidth(Number(e.target.value))}
-                style={{ width: '100%', marginTop: '0.3rem' }}
+                style={{ width: '100%', marginTop: '0.4rem' }}
               />
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>슬라이더 조절 시 미리보기 해상도 캔버스가 실시간 변경됩니다.</span>
+            </div>
+          </div>
+
+          {/* 이미지 추가 드롭존 & 개별 프레임 삭제 갤러리 */}
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>{labels.imagesCount}</label>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', overflowX: 'auto', paddingBottom: '0.75rem' }}>
+              {previews.map((src, idx) => (
+                <div key={idx} style={{ position: 'relative', width: '90px', height: '90px', flexShrink: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: idx === currentFrameIdx ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)' }}>
+                  <img src={src} alt={`Frame ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <span style={{ position: 'absolute', bottom: '4px', left: '4px', background: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '0.65rem', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>
+                    #{idx + 1}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveFrame(idx)}
+                    style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.85)', color: '#fff', border: 'none', borderRadius: '50%', width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    title="프레임 삭제"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -257,9 +386,9 @@ export const GifMakerPage: React.FC = () => {
             className="btn-primary"
             onClick={handleMakeGif}
             disabled={isProcessing}
-            style={{ width: '100%', padding: '0.9rem', fontSize: '1.05rem' }}
+            style={{ width: '100%', padding: '0.95rem', fontSize: '1.1rem' }}
           >
-            <Play size={18} /> {isProcessing ? t.processing : labels.btnMake}
+            <Film size={20} /> {isProcessing ? t.processing : labels.btnMake}
           </button>
         </div>
       )}
