@@ -13,9 +13,9 @@ export const GifMakerPage: React.FC = () => {
   const { language, t } = useLanguage();
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [fps, setFps] = useState<number>(6); // 기본 6 FPS
-  const [gifWidth, setGifWidth] = useState<number>(400); // 기본 400px 너비
-  const [isPlaying, setIsPlaying] = useState<boolean>(true); // 미리보기 재생 여부
+  const [fps, setFps] = useState<number>(6);
+  const [gifWidth, setGifWidth] = useState<number>(400);
+  const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [currentFrameIdx, setCurrentFrameIdx] = useState<number>(0);
 
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -31,7 +31,7 @@ export const GifMakerPage: React.FC = () => {
       btnMake: '고화질 GIF 파일 생성 및 다운로드',
       doneTitle: 'GIF 애니메이션 제작 완료!',
       fpsLabel: '실시간 프레임 속도 (FPS):',
-      widthLabel: '미리보기 해상도 너비 (px):',
+      widthLabel: 'GIF 출력 해상도 너비 (px):',
       imagesCount: '프레임 순서 관리:',
       livePreviewTitle: '🎬 실시간 GIF 애니메이션 미리보기',
       playBtn: '재생',
@@ -42,7 +42,7 @@ export const GifMakerPage: React.FC = () => {
       btnMake: 'Generate & Download GIF File',
       doneTitle: 'GIF Animation Created!',
       fpsLabel: 'Live Frame Rate (FPS):',
-      widthLabel: 'Preview Resolution Width (px):',
+      widthLabel: 'Output Resolution Width (px):',
       imagesCount: 'Frame Sequence Management:',
       livePreviewTitle: '🎬 Live GIF Animation Preview',
       playBtn: 'Play',
@@ -53,7 +53,7 @@ export const GifMakerPage: React.FC = () => {
       btnMake: 'Generar y Descargar Archivo GIF',
       doneTitle: '¡Animación GIF Creada!',
       fpsLabel: 'Velocidad de cuadro en vivo (FPS):',
-      widthLabel: 'Ancho de vista previa (px):',
+      widthLabel: 'Ancho de salida (px):',
       imagesCount: 'Gestión de secuencia:',
       livePreviewTitle: '🎬 Vista previa de animación GIF en vivo',
       playBtn: 'Reproducir',
@@ -64,7 +64,7 @@ export const GifMakerPage: React.FC = () => {
       btnMake: '生成并下载 GIF 文件',
       doneTitle: 'GIF 动图制作完成！',
       fpsLabel: '实时帧率 (FPS)：',
-      widthLabel: '预览分辨率宽度 (px)：',
+      widthLabel: '输出分辨率宽度 (px)：',
       imagesCount: '帧顺序管理：',
       livePreviewTitle: '🎬 实时 GIF 动画预览',
       playBtn: '播放',
@@ -75,7 +75,7 @@ export const GifMakerPage: React.FC = () => {
       btnMake: '高品質GIFファイルを生成＆ダウンロード',
       doneTitle: 'GIFアニメーション作成完了！',
       fpsLabel: 'リアルタイムフレームレート (FPS):',
-      widthLabel: 'プレビュー解像度幅 (px):',
+      widthLabel: '出力解像度幅 (px):',
       imagesCount: 'フレーム順序管理:',
       livePreviewTitle: '🎬 リアルタイムGIFアニメーションプレビュー',
       playBtn: '再生',
@@ -86,7 +86,7 @@ export const GifMakerPage: React.FC = () => {
     btnMake: 'Generate & Download GIF File',
     doneTitle: 'GIF Animation Created!',
     fpsLabel: 'Live Frame Rate (FPS):',
-    widthLabel: 'Preview Resolution Width (px):',
+    widthLabel: 'Output Resolution Width (px):',
     imagesCount: 'Frame Sequence Management:',
     livePreviewTitle: '🎬 Live GIF Animation Preview',
     playBtn: 'Play',
@@ -105,9 +105,6 @@ export const GifMakerPage: React.FC = () => {
     setResultUrl(null);
   };
 
-  /**
-   * 프레임 이미지 객체 로딩 및 캐싱 ⭐
-   */
   useEffect(() => {
     let isCancelled = false;
     const loadImages = async () => {
@@ -134,25 +131,19 @@ export const GifMakerPage: React.FC = () => {
     };
   }, [previews]);
 
-  /**
-   * 실시간 Canvas 미리보기 렌더링 루프 (FPS & 해상도 너비 연동) ⭐
-   */
   useEffect(() => {
     if (previews.length === 0 || !isPlaying) return;
 
     const intervalMs = Math.round(1000 / fps);
     const timer = setInterval(() => {
-      setCurrentFrameIdx((prevIdx) => {
-        const nextIdx = (prevIdx + 1) % previews.length;
-        return nextIdx;
-      });
+      setCurrentFrameIdx((prevIdx) => (prevIdx + 1) % previews.length);
     }, intervalMs);
 
     return () => clearInterval(timer);
   }, [previews.length, fps, isPlaying]);
 
   /**
-   * currentFrameIdx 또는 gifWidth 변경 시 캔버스에 그리기 ⭐
+   * 고정 크기 Canvas 상에서 이미지 비율 맞춤 (Fit Contain) 렌더링 ⭐
    */
   useEffect(() => {
     const canvas = previewCanvasRef.current;
@@ -160,18 +151,30 @@ export const GifMakerPage: React.FC = () => {
     if (!canvas || imgs.length === 0 || !imgs[currentFrameIdx]) return;
 
     const currentImg = imgs[currentFrameIdx];
-    const targetWidth = gifWidth;
-    const targetHeight = Math.round((currentImg.height / currentImg.width) * targetWidth);
+    
+    // 미리보기 창 고정 해상도 (600x400)
+    const viewWidth = 600;
+    const viewHeight = 380;
 
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
+    canvas.width = viewWidth;
+    canvas.height = viewHeight;
 
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      ctx.clearRect(0, 0, targetWidth, targetHeight);
-      ctx.drawImage(currentImg, 0, 0, targetWidth, targetHeight);
+      // 배경 초기화
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, viewWidth, viewHeight);
+
+      // 이미지를 미리보기 박스 중앙에 비율 맞춤(Contain) 렌더링
+      const scale = Math.min(viewWidth / currentImg.width, viewHeight / currentImg.height);
+      const drawWidth = currentImg.width * scale;
+      const drawHeight = currentImg.height * scale;
+      const dx = (viewWidth - drawWidth) / 2;
+      const dy = (viewHeight - drawHeight) / 2;
+
+      ctx.drawImage(currentImg, dx, dy, drawWidth, drawHeight);
     }
-  }, [currentFrameIdx, gifWidth, previews.length]);
+  }, [currentFrameIdx, previews.length]);
 
   const handleRemoveFrame = (indexToRemove: number) => {
     setFiles((prev) => prev.filter((_, idx) => idx !== indexToRemove));
@@ -182,9 +185,6 @@ export const GifMakerPage: React.FC = () => {
     setResultUrl(null);
   };
 
-  /**
-   * 고화질 GIF 애니메이션 최종 파일 인코딩 및 다운로드 ⭐
-   */
   const handleMakeGif = async () => {
     if (previews.length === 0) return;
 
@@ -299,10 +299,10 @@ export const GifMakerPage: React.FC = () => {
             </button>
           </div>
 
-          {/* ⭐ 실시간 GIF 애니메이션 Canvas 미리보기 패널 ⭐ */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
-            <div style={{ padding: '0.5rem', background: '#000', borderRadius: 'var(--radius-md)', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', boxShadow: 'var(--card-shadow)', maxWidth: '100%', overflow: 'hidden' }}>
-              <canvas ref={previewCanvasRef} style={{ display: 'block', maxWidth: '100%', maxHeight: '400px' }} />
+          {/* ⭐ 고정 높이/너비 Viewport 미리보기 창 (흔들림 100% 방지) ⭐ */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <div style={{ width: '100%', maxWidth: '600px', height: '380px', background: '#0f172a', borderRadius: 'var(--radius-md)', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', boxShadow: 'var(--card-shadow)', border: '1px solid var(--border-color)' }}>
+              <canvas ref={previewCanvasRef} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -320,7 +320,7 @@ export const GifMakerPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ⭐ 실시간 조절 옵션 슬라이더 ⭐ */}
+          {/* ⭐ 조절 옵션 슬라이더 ⭐ */}
           <div style={{ background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
             <div>
               <label style={{ fontSize: '0.88rem', fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
@@ -352,11 +352,11 @@ export const GifMakerPage: React.FC = () => {
                 onChange={(e) => setGifWidth(Number(e.target.value))}
                 style={{ width: '100%', marginTop: '0.4rem' }}
               />
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>슬라이더 조절 시 미리보기 해상도 캔버스가 실시간 변경됩니다.</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>최종 GIF 다운로드 시 생성될 이미지 너비 크기입니다.</span>
             </div>
           </div>
 
-          {/* 이미지 추가 드롭존 & 개별 프레임 삭제 갤러리 */}
+          {/* 이미지 프레임 순서 갤러리 */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
               <label style={{ fontSize: '0.9rem', fontWeight: 700 }}>{labels.imagesCount}</label>
