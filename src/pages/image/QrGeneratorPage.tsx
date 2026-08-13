@@ -159,7 +159,6 @@ export const QrGeneratorPage: React.FC = () => {
 
       const dataUrl = canvas.toDataURL('image/png');
       setQrDataUrl(dataUrl);
-      trackToolUsage('image-qr-generator', 'QR 코드 생성기');
     } catch (err) {
       console.error('QR generation failed:', err);
     }
@@ -171,6 +170,7 @@ export const QrGeneratorPage: React.FC = () => {
 
   const handleDownload = (format: 'png' | 'jpeg') => {
     if (!qrDataUrl) return;
+    trackToolUsage('image-qr-generator', 'QR 코드 생성기');
     const link = document.createElement('a');
     link.download = `qrcode_${inputType}_${Date.now()}.${format}`;
     link.href = qrDataUrl;
@@ -180,6 +180,7 @@ export const QrGeneratorPage: React.FC = () => {
 
   const handleCopyImage = async () => {
     if (!canvasRef.current) return;
+    trackToolUsage('image-qr-generator', 'QR 코드 생성기');
     try {
       canvasRef.current.toBlob(async (blob) => {
         if (blob && navigator.clipboard && (window as any).ClipboardItem) {

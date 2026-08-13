@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
-import { getAnalyticsSummary } from '../../utils/analytics';
+import { getAnalyticsSummary, resetToolStatCount } from '../../utils/analytics';
 import type { FeedbackPost } from '../../types';
 import confetti from 'canvas-confetti';
 import {
@@ -25,6 +25,7 @@ import {
   Smartphone,
   Calendar,
   Layers,
+  RotateCcw,
 } from 'lucide-react';
 
 async function hashPassword(plainText: string): Promise<string> {
@@ -51,6 +52,7 @@ export const FeedbackPage: React.FC = () => {
   const [adminPass, setAdminPass] = useState<string>('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [isUserAuthenticated, setIsUserAuthenticated] = useState<boolean>(false);
+  const [, setRefreshCount] = useState<number>(0);
 
   // 고도화 통계 데이터 수집 ⭐
   const statsSummary = getAnalyticsSummary();
@@ -160,6 +162,11 @@ export const FeedbackPage: React.FC = () => {
   const handleLike = (id: string) => {
     const nextPosts = posts.map((p) => (p.id === id ? { ...p, likes: p.likes + 1 } : p));
     savePosts(nextPosts);
+  };
+
+  const handleResetToolCount = (toolId: string) => {
+    resetToolStatCount(toolId, 1);
+    setRefreshCount((prev) => prev + 1);
   };
 
   const visiblePosts = isAdminAuthenticated && viewMode === 'admin'
@@ -440,10 +447,10 @@ export const FeedbackPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 🛠️ 15개 툴별 실시간 사용량 랭킹 & 비율 바 차트 ⭐ */}
+            {/* 🛠️ 툴별 실시간 사용량 랭킹 & 비율 바 차트 (보정 버튼 추가 ⭐) */}
             <div style={{ background: 'var(--bg-main)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <span style={{ fontSize: '0.95rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#f59e0b' }}>
-                <Wrench size={18} /> 15개 툴별 실시간 사용량 랭킹 & 점유율 (%)
+                <Wrench size={18} /> 툴별 실시간 사용량 랭킹 & 점유율 (%)
               </span>
 
               {toolStatsList.length === 0 ? (
@@ -451,14 +458,27 @@ export const FeedbackPage: React.FC = () => {
                   도구를 사용하면 랭킹과 점유율 바 차트가 실시간 업데이트됩니다.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {toolStatsList.map((st, idx) => {
                     const pct = totalToolExecCount > 0 ? Math.round((st.count / totalToolExecCount) * 100) : 0;
                     return (
-                      <div key={st.toolId} style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                          <span style={{ fontWeight: 600 }}>#{idx + 1} {st.toolName} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({st.toolId})</span></span>
-                          <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{st.count}회 ({pct}%)</span>
+                      <div key={st.toolId} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem' }}>
+                          <span style={{ fontWeight: 600 }}>
+                            #{idx + 1} {st.toolName} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({st.toolId})</span>
+                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <span style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{st.count}회 ({pct}%)</span>
+                            {st.count > 50 && (
+                              <button
+                                onClick={() => handleResetToolCount(st.toolId)}
+                                style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                                title="누수된 부풀림 수치 1회로 초기화"
+                              >
+                                <RotateCcw size={10} /> 수치 초기화
+                              </button>
+                            )}
+                          </div>
                         </div>
                         <div style={{ height: '6px', background: 'var(--bg-secondary)', borderRadius: '3px', overflow: 'hidden' }}>
                           <div style={{ width: `${Math.max(5, pct)}%`, height: '100%', background: 'var(--accent-gradient)', borderRadius: '3px' }} />

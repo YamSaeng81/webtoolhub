@@ -4,7 +4,7 @@
  * - 접속 국가/도시 GeoIP 분석 (국기, 국가명, 도시)
  * - 접속 디바이스/브라우저/OS 분석 (Desktop / Mobile / Tablet)
  * - 최근 7일 일자별 순 방문자(UV) & 페이지뷰(PV) 히스토리
- * - 15개 툴별 실시간 사용량 랭킹 & 비율
+ * - 15개 툴별 실시간 사용량 랭킹 & 비율 (10초 쿨다운 디바운스 탑재 ⭐)
  */
 
 export interface ToolUsageStat {
@@ -45,6 +45,7 @@ export interface AnalyticsSummary {
 }
 
 const STORAGE_KEY = 'webtoolhub_analytics_v3';
+const toolLastTrackedTimes: Record<string, number> = {};
 
 declare global {
   interface Window {
@@ -96,7 +97,6 @@ function loadAnalyticsData(): AnalyticsSummary {
       if (!parsed.deviceStats) parsed.deviceStats = {};
       if (!parsed.dailyHistory) parsed.dailyHistory = {};
 
-      // 날짜가 지나면 오늘 순 방문자 수 리셋
       if (parsed.lastDate !== todayStr) {
         parsed.todayVisitors = 0;
         parsed.lastDate = todayStr;
@@ -127,29 +127,25 @@ function saveAnalyticsData(data: AnalyticsSummary) {
 }
 
 /**
- * 1. 페이지 뷰 (PV) & 순 방문자 수 (UV) & 접속 지오/기기 추적 ⭐
+ * 1. 페이지 뷰 (PV) & 순 방문자 수 (UV) & 접속 지오/기기 추적
  */
 export function trackPageView(path: string) {
   const data = loadAnalyticsData();
   const todayStr = new Date().toISOString().split('T')[0];
   const visitSessionKey = `webtoolhub_uv_${todayStr}`;
 
-  // 페이지 뷰(PV) 카운트
   data.totalPageviews = (data.totalPageviews || 0) + 1;
 
-  // 일자별 히스토리 기록
   if (!data.dailyHistory[todayStr]) {
     data.dailyHistory[todayStr] = { date: todayStr, uv: 0, pv: 0 };
   }
   data.dailyHistory[todayStr].pv += 1;
 
-  // 순 방문자 수(UV) 중복 방지 카운트
   if (!localStorage.getItem(visitSessionKey)) {
     data.todayVisitors = (data.todayVisitors || 0) + 1;
     data.dailyHistory[todayStr].uv += 1;
     localStorage.setItem(visitSessionKey, 'visited');
 
-    // 디바이스 통계 기록
     const dev = getDeviceInfo();
     const devKey = `${dev.deviceType}_${dev.browser}`;
     if (!data.deviceStats[devKey]) {
@@ -157,7 +153,6 @@ export function trackPageView(path: string) {
     }
     data.deviceStats[devKey].count += 1;
 
-    // 접속 GeoIP 분석 비동기 캡처 ⭐
     fetchGeoLocation((geo) => {
       const curData = loadAnalyticsData();
       if (!curData.geoStats) curData.geoStats = {};
@@ -178,15 +173,11 @@ export function trackPageView(path: string) {
 
   saveAnalyticsData(data);
 
-  // GA4 연동
   if (window.gtag) {
     window.gtag('event', 'page_view', { page_path: path });
   }
 }
 
-/**
- * 무료 GeoIP API 캡처 함수 (국가코드, 국기, 도시)
- */
 function fetchGeoLocation(callback: (geo: { countryCode: string; countryName: string; city: string; flag: string }) => void) {
   fetch('https://ipapi.co/json/')
     .then((res) => res.json())
@@ -198,7 +189,6 @@ function fetchGeoLocation(callback: (geo: { countryCode: string; countryName: st
       callback({ countryCode, countryName, city, flag });
     })
     .catch(() => {
-      // 기본 대한민국 처리
       callback({ countryCode: 'KR', countryName: '대한민국', city: 'Seoul', flag: '🇰🇷' });
     });
 }
@@ -213,9 +203,18 @@ function getFlagEmoji(countryCode: string) {
 }
 
 /**
- * 2. 툴 사용 횟수 추적
+ * 2. 툴 사용 횟수 추적 (10초 쿨다운 디바운스 적용 ⭐)
  */
 export function trackToolUsage(toolId: string, toolName: string) {
+  const now = Date.now();
+  const lastTracked = toolLastTrackedTimes[toolId] || 0;
+
+  // 10초 이내에 연속으로 호출된 경우 중복 집계 무시 (타이핑 무한 카운트 방지 ⭐)
+  if (now - lastTracked < 10000) {
+    return;
+  }
+  toolLastTrackedTimes[toolId] = now;
+
   const data = loadAnalyticsData();
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -240,7 +239,18 @@ export function trackToolUsage(toolId: string, toolName: string) {
 }
 
 /**
- * 3. 관리자 통계 수치 전체 반환
+ * 3. 비정상적으로 부풀려진 툴 카운터 정상화/보정 (관리자 전용) ⭐
+ */
+export function resetToolStatCount(toolId: string, newCount: number = 1) {
+  const data = loadAnalyticsData();
+  if (data.toolStats && data.toolStats[toolId]) {
+    data.toolStats[toolId].count = newCount;
+    saveAnalyticsData(data);
+  }
+}
+
+/**
+ * 4. 관리자 통계 수치 전체 반환
  */
 export function getAnalyticsSummary(): AnalyticsSummary {
   return loadAnalyticsData();
