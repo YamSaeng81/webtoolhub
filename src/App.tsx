@@ -17,12 +17,14 @@ import { CropPdfPage } from './pages/pdf/CropPdfPage';
 import { OcrPdfPage } from './pages/pdf/OcrPdfPage';
 import { PdfProtectPage } from './pages/pdf/PdfProtectPage';
 
+import { ImageBgRemoverPage } from './pages/image/ImageBgRemoverPage';
 import { QrGeneratorPage } from './pages/image/QrGeneratorPage';
 import { ImageCompressPage } from './pages/image/ImageCompressPage';
 import { ImageConvertPage } from './pages/image/ImageConvertPage';
 import { ImageResizePage } from './pages/image/ImageResizePage';
 import { FaviconGeneratorPage } from './pages/image/FaviconGeneratorPage';
 
+import { GifMakerPage } from './pages/media/GifMakerPage';
 import { VideoToMp3Page } from './pages/media/VideoToMp3Page';
 import { AudioCutterPage } from './pages/media/AudioCutterPage';
 import { VideoCutterPage } from './pages/media/VideoCutterPage';
@@ -93,7 +95,9 @@ export default function App() {
       case '/pdf/protect':
         return <PdfProtectPage />;
 
-      // 🖼️ IMAGE (신규 QR 코드 생성기 추가) ⭐
+      // 🖼️ IMAGE (신규 누끼따기 & QR코드 추가) ⭐
+      case '/image/bg-remover':
+        return <ImageBgRemoverPage />;
       case '/image/qr-generator':
         return <QrGeneratorPage />;
       case '/image/compress':
@@ -105,7 +109,9 @@ export default function App() {
       case '/image/favicon-generator':
         return <FaviconGeneratorPage />;
 
-      // 🎬 MEDIA (총 5개 라우트)
+      // 🎬 MEDIA (신규 GIF 제작기 포함 총 6개 라우트) ⭐
+      case '/media/gif-maker':
+        return <GifMakerPage />;
       case '/media/video-to-mp3':
         return <VideoToMp3Page />;
       case '/media/audio-cutter':

@@ -214,7 +214,32 @@ export const ALL_TOOLS: ToolItem[] = [
     metaKeywords: ['crop pdf', 'pdf 여백 자르기', 'pdf 크롭'],
   },
 
-  // 🖼️ IMAGE Tools (총 5종 신규 QR 코드 포함) ⭐
+  // 🖼️ IMAGE Tools (총 6종 신규 배경제거 포함) ⭐
+  {
+    id: 'image-bg-remover',
+    category: 'image',
+    title: 'AI 이미지 배경 제거 (누끼 따기)',
+    description: '이미지 배경을 0.1초 만에 100% 투명 처리(PNG)로 깨끗하게 잘라냅니다.',
+    titleMap: {
+      ko: 'AI 이미지 배경 제거 (누끼 따기)',
+      en: 'AI Background Remover',
+      es: 'Eliminador de fondo AI',
+      zh: 'AI 图像背景消除 (抠图)',
+      ja: 'AI画像背景削除 (切り抜き)',
+    },
+    descriptionMap: {
+      ko: '이미지 배경을 0.1초 만에 100% 투명 처리(PNG)로 깨끗하게 잘라냅니다.',
+      en: 'Remove image background instantly and export transparent PNG.',
+      es: 'Elimine el fondo de la imagen al instante y exporte PNG transparente.',
+      zh: '即时消除图像背景并导出透明 PNG。',
+      ja: '画像の背景を瞬時に消去し透明PNGで切り抜き保存。',
+    },
+    iconName: 'Scissors',
+    path: '/image/bg-remover',
+    isPopular: true,
+    isNew: true,
+    metaKeywords: ['image bg remover', '누끼 따기', '이미지 배경 제거'],
+  },
   {
     id: 'image-qr-generator',
     category: 'image',
@@ -257,7 +282,7 @@ export const ALL_TOOLS: ToolItem[] = [
       en: 'Reduce PNG, JPG image file sizes by up to 80% with high quality.',
       es: 'Reduzca el tamaño de imágenes PNG y JPG hasta un 80%.',
       zh: '在保持质量的同时将 PNG、JPG 图像文件压缩高达 80%。',
-      ja: '画質劣化を抑えながらPNG、JPG画像を最大80%圧縮します。',
+      ja: '画質劣化를抑えながらPNG、JPG画像を最大80%圧縮します。',
     },
     iconName: 'Minimize2',
     path: '/image/compress',
@@ -333,7 +358,32 @@ export const ALL_TOOLS: ToolItem[] = [
     metaKeywords: ['favicon generator', '파비콘 만들기'],
   },
 
-  // 🎬 MEDIA Tools (총 5종)
+  // 🎬 MEDIA Tools (총 6종 신규 GIF 제작기 포함) ⭐
+  {
+    id: 'media-gif-maker',
+    category: 'media',
+    title: 'GIF 애니메이션 짤 제작기 (GIF Maker)',
+    description: '여러 장의 이미지를 프레임 속도와 해상도를 조절하여 고화질 GIF 애니메이션으로 짤 합성합니다.',
+    titleMap: {
+      ko: 'GIF 애니메이션 짤 제작기',
+      en: 'GIF Animation Maker',
+      es: 'Creador de animación GIF',
+      zh: 'GIF 动图制作器',
+      ja: 'GIFアニメーション作成器',
+    },
+    descriptionMap: {
+      ko: '여러 장의 이미지를 프레임 속도와 해상도를 조절하여 고화질 GIF 애니메이션으로 짤 합성합니다.',
+      en: 'Combine multiple images into animated GIF with FPS and resolution controls.',
+      es: 'Combine varias imágenes en un GIF animado con controles de FPS.',
+      zh: '通过控制 FPS 和分辨率将多张图像合成高质量 GIF 动图。',
+      ja: '複数の画像をフレームレートと解像度を調整して高品質GIFアニメーションを作成。',
+    },
+    iconName: 'Film',
+    path: '/media/gif-maker',
+    isPopular: true,
+    isNew: true,
+    metaKeywords: ['gif maker', 'gif 만들기', '움짤 제작기'],
+  },
   {
     id: 'video-to-mp3',
     category: 'media',
