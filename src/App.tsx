@@ -17,6 +17,7 @@ import { CropPdfPage } from './pages/pdf/CropPdfPage';
 import { OcrPdfPage } from './pages/pdf/OcrPdfPage';
 import { PdfProtectPage } from './pages/pdf/PdfProtectPage';
 
+import { QrGeneratorPage } from './pages/image/QrGeneratorPage';
 import { ImageCompressPage } from './pages/image/ImageCompressPage';
 import { ImageConvertPage } from './pages/image/ImageConvertPage';
 import { ImageResizePage } from './pages/image/ImageResizePage';
@@ -92,7 +93,9 @@ export default function App() {
       case '/pdf/protect':
         return <PdfProtectPage />;
 
-      // 🖼️ IMAGE
+      // 🖼️ IMAGE (신규 QR 코드 생성기 추가) ⭐
+      case '/image/qr-generator':
+        return <QrGeneratorPage />;
       case '/image/compress':
         return <ImageCompressPage />;
       case '/image/convert':
@@ -156,7 +159,6 @@ export default function App() {
 
       <Footer onNavigate={handleNavigate} />
 
-      {/* 📱 모바일 전용 고정 하단 탭 바 & 바텀 시트 연동 ⭐ */}
       <MobileBottomNav currentPath={currentPath} onNavigate={handleNavigate} />
     </div>
   );

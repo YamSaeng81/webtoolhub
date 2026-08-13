@@ -214,7 +214,32 @@ export const ALL_TOOLS: ToolItem[] = [
     metaKeywords: ['crop pdf', 'pdf 여백 자르기', 'pdf 크롭'],
   },
 
-  // 🖼️ IMAGE Tools (총 4종)
+  // 🖼️ IMAGE Tools (총 5종 신규 QR 코드 포함) ⭐
+  {
+    id: 'image-qr-generator',
+    category: 'image',
+    title: 'QR 코드 생성기 (QR Generator)',
+    description: 'URL, Wi-Fi 자동 접속, 전화번호, 이메일을 커스텀 색상의 고화질 QR 코드로 바로 생성합니다.',
+    titleMap: {
+      ko: 'QR 코드 생성기',
+      en: 'QR Code Generator',
+      es: 'Generador de Código QR',
+      zh: 'QR 码生成器',
+      ja: 'QRコード生成器',
+    },
+    descriptionMap: {
+      ko: 'URL, Wi-Fi 자동 접속, 전화번호, 이메일을 커스텀 색상의 고화질 QR 코드로 바로 생성합니다.',
+      en: 'Generate custom colored high-resolution QR codes for URLs, Wi-Fi, Phone, Email instantly.',
+      es: 'Genere códigos QR de alta resolución con colores personalizados para URL, Wi-Fi, etc.',
+      zh: '为 URL、Wi-Fi、电话、电子邮件即时生成自定义颜色的高质量 QR 码。',
+      ja: 'URL、Wi-Fi、電話番号、メールをカスタム色の高品質QRコードで即座に生成。',
+    },
+    iconName: 'Sparkles',
+    path: '/image/qr-generator',
+    isPopular: true,
+    isNew: true,
+    metaKeywords: ['qr code generator', 'qr 코드 생성기', '큐알코드 만들기'],
+  },
   {
     id: 'image-compress',
     category: 'image',
@@ -308,7 +333,7 @@ export const ALL_TOOLS: ToolItem[] = [
     metaKeywords: ['favicon generator', '파비콘 만들기'],
   },
 
-  // 🎬 MEDIA Tools (총 5종 라인업으로 대확장) ⭐
+  // 🎬 MEDIA Tools (총 5종)
   {
     id: 'video-to-mp3',
     category: 'media',
