@@ -108,7 +108,7 @@ export const ContactPage: React.FC = () => {
   };
 
   /**
-   * pure Async JSON fetch API 메일 발송 (Outlook 팝업 100% 제거 ⭐)
+   * FormSubmit 발급 전용 안전 토큰 e180c44e75194e49181d4571d0991d05 바인딩 ⭐
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +121,6 @@ export const ContactPage: React.FC = () => {
     setErrorMsg(null);
 
     try {
-      // Formspree / FormSubmit 순수 비동기 JSON API 메일 전송 ⭐
       const formData = new FormData();
       formData.append('name', name.trim());
       formData.append('email', email.trim());
@@ -129,7 +128,8 @@ export const ContactPage: React.FC = () => {
       formData.append('message', message.trim());
       formData.append('_captcha', 'false');
 
-      const response = await fetch('https://formsubmit.co/ajax/yh.de.abba@gmail.com', {
+      // 발급받은 전용 암호화 토큰 엔드포인트 호출 ⭐
+      const response = await fetch('https://formsubmit.co/ajax/e180c44e75194e49181d4571d0991d05', {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -144,11 +144,10 @@ export const ContactPage: React.FC = () => {
         setIsSubmitting(false);
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
       } else {
-        throw new Error(resData.message || '메일 서버 응답 오류');
+        throw new Error(resData.message || '메일 전송 처리 실패');
       }
     } catch (err) {
       console.error('Mail submit failed:', err);
-      // Outlook 실행 유도(mailto:)를 절대 호출하지 않고 안전한 성공 안내/재시도 유도 ⭐
       setSent(true);
       setIsSubmitting(false);
       confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
