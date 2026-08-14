@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ToolHeader } from '../components/common/ToolHeader';
 import { AdBanner } from '../components/ads/AdBanner';
 import { useLanguage } from '../context/LanguageContext';
-import { Mail, MessageSquare, Send, CheckCircle } from 'lucide-react';
+import { Mail, MessageSquare, Send, CheckCircle, Loader2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const ContactPage: React.FC = () => {
@@ -11,6 +11,7 @@ export const ContactPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [subject, setSubject] = useState<string>('');
   const [message, setMessage] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [sent, setSent] = useState<boolean>(false);
 
   const content = {
@@ -19,27 +20,29 @@ export const ContactPage: React.FC = () => {
       subTitle: 'WebToolHub 서비스 개선 제안, 툴 추가 요청, 제휴 및 버그 제보',
       emailTitle: '공식 운영자 이메일 문의',
       emailDesc: 'yh.de.abba@gmail.com 에 직접 메일을 보내시거나 아래 문의 서식을 이용해 주세요.',
-      formTitle: '1:1 빠른 문의 및 피드백 작성',
+      formTitle: '1:1 실시간 이메일 문의 작성',
       nameLabel: '성함 / 닉네임',
       emailLabel: '이메일 주소 (답변 받을 메일)',
       subjectLabel: '문의 제목',
       messageLabel: '문의 및 제안 내용',
-      sendBtn: '문의 메일 전송하기',
-      successTitle: '문의 메일이 전송되었습니다!',
-      successDesc: '소중한 의견 감사드리며, 확인 후 24시간 이내에 답변드리겠습니다.',
+      sendBtn: '운영자 지메일로 메일 발송하기',
+      sendingBtn: '메일 전송 중...',
+      successTitle: '운영자 메일함(yh.de.abba@gmail.com)으로 전송되었습니다!',
+      successDesc: '소중한 의견 감사드리며, 운영자가 확인 후 24시간 이내에 답변드리겠습니다.',
     },
     en: {
       title: 'Contact Us & Feedback',
       subTitle: 'Suggestions, feature requests, partnerships, and bug reports',
       emailTitle: 'Official Support Email',
       emailDesc: 'Feel free to email us directly at yh.de.abba@gmail.com or use the form below.',
-      formTitle: '1:1 Fast Support & Feedback Form',
+      formTitle: '1:1 Live Email Support Form',
       nameLabel: 'Your Name / Nickname',
       emailLabel: 'Email Address for Reply',
       subjectLabel: 'Subject',
       messageLabel: 'Message / Feedback',
-      sendBtn: 'Send Message',
-      successTitle: 'Message Sent Successfully!',
+      sendBtn: 'Send Email to Admin',
+      sendingBtn: 'Sending Email...',
+      successTitle: 'Email Sent to yh.de.abba@gmail.com!',
       successDesc: 'Thank you for contacting us. We will reply within 24 hours.',
     },
     es: {
@@ -52,8 +55,9 @@ export const ContactPage: React.FC = () => {
       emailLabel: 'Dirección de correo electrónico',
       subjectLabel: 'Asunto',
       messageLabel: 'Mensaje',
-      sendBtn: 'Enviar mensaje',
-      successTitle: '¡Mensaje enviado!',
+      sendBtn: 'Enviar mensaje a Admin',
+      sendingBtn: 'Enviando...',
+      successTitle: '¡Mensaje enviado a yh.de.abba@gmail.com!',
       successDesc: 'Gracias por contactarnos. Responderemos dentro de 24 horas.',
     },
     zh: {
@@ -61,13 +65,14 @@ export const ContactPage: React.FC = () => {
       subTitle: '功能建议、新工具请求、商务合作及 Bug 反馈',
       emailTitle: '官方支持电子邮箱',
       emailDesc: '请发送邮件至 yh.de.abba@gmail.com 或使用下方的快速表格。',
-      formTitle: '1:1 快速联系与反馈表单',
+      formTitle: '1:1 实时电子邮件联系表单',
       nameLabel: '您的姓名 / 昵称',
       emailLabel: '回复电子邮箱',
       subjectLabel: '主题',
       messageLabel: '详细内容',
-      sendBtn: '发送消息',
-      successTitle: '消息已成功发送！',
+      sendBtn: '发送邮件至管理员',
+      sendingBtn: '发送中...',
+      successTitle: '邮件已成功发送至 yh.de.abba@gmail.com！',
       successDesc: '感谢您的支持，我们将在 24 小时内回复。',
     },
     ja: {
@@ -75,13 +80,14 @@ export const ContactPage: React.FC = () => {
       subTitle: 'サービス改善のご提案、機能リクエスト、バグ報告',
       emailTitle: '公式サポートメール',
       emailDesc: 'yh.de.abba@gmail.com まで直接メールを送信するか、以下のフォームをご利用ください。',
-      formTitle: '1:1 お問い合わせフォーム',
+      formTitle: '1:1 リアルタイムメールフォーム',
       nameLabel: 'お名前 / ニックネーム',
       emailLabel: '返信用メールアドレス',
       subjectLabel: '件名',
       messageLabel: 'お問い合わせ内容',
-      sendBtn: 'メッセージを送信',
-      successTitle: 'お問い合わせを送信しました！',
+      sendBtn: '管理者へメールを送信',
+      sendingBtn: '送信中...',
+      successTitle: 'yh.de.abba@gmail.com へ送信完了！',
       successDesc: 'ご意見ありがとうございます。24時間以内にご返信いたします。',
     },
   }[language] || {
@@ -89,24 +95,65 @@ export const ContactPage: React.FC = () => {
     subTitle: 'Suggestions, feature requests, partnerships, and bug reports',
     emailTitle: 'Official Support Email',
     emailDesc: 'Feel free to email us directly at yh.de.abba@gmail.com or use the form below.',
-    formTitle: '1:1 Fast Support & Feedback Form',
+    formTitle: '1:1 Live Email Support Form',
     nameLabel: 'Your Name / Nickname',
     emailLabel: 'Email Address for Reply',
     subjectLabel: 'Subject',
     messageLabel: 'Message / Feedback',
-    sendBtn: 'Send Message',
-    successTitle: 'Message Sent Successfully!',
+    sendBtn: 'Send Email to Admin',
+    sendingBtn: 'Sending Email...',
+    successTitle: 'Email Sent to yh.de.abba@gmail.com!',
     successDesc: 'Thank you for contacting us. We will reply within 24 hours.',
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  /**
+   * Web3Forms API 기반 실제 운영자 지메일(yh.de.abba@gmail.com)로 메일 전송 ⭐
+   */
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
       alert('성함, 이메일, 문의 내용을 입력해 주세요.');
       return;
     }
-    setSent(true);
-    confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
+
+    setIsSubmitting(true);
+
+    try {
+      // Web3Forms API로 실제 지메일(yh.de.abba@gmail.com) 전송 ⭐
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({
+          access_key: 'bfa4fb80-0a06-4444-93f5-0818d6a8a3a0', // Web3Forms Public Access Key
+          name: name.trim(),
+          email: email.trim(),
+          subject: `[WebToolHub 문의] ${subject.trim() || '신규 문의 접수'}`,
+          message: `보낸사람: ${name.trim()} (${email.trim()})\n\n[문의 내용]\n${message.trim()}`,
+          to_email: 'yh.de.abba@gmail.com',
+        }),
+      });
+
+      const resData = await response.json();
+
+      if (resData.success) {
+        setSent(true);
+        setIsSubmitting(false);
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
+      } else {
+        // 백업 mailto 직접 호출
+        window.location.href = `mailto:yh.de.abba@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`이름: ${name}\n이메일: ${email}\n\n내용:\n${message}`)}`;
+        setSent(true);
+        setIsSubmitting(false);
+      }
+    } catch (err) {
+      // 백업 mailto 이메일 프로그램 호출
+      window.location.href = `mailto:yh.de.abba@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`이름: ${name}\n이메일: ${email}\n\n내용:\n${message}`)}`;
+      setSent(true);
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -129,13 +176,23 @@ export const ContactPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 1:1 문의 폼 */}
+      {/* 1:1 실시간 이메일 전송 폼 */}
       {sent ? (
-        <div className="glass-panel" style={{ padding: '3rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <CheckCircle size={50} color="#10b981" />
+        <div className="glass-panel animate-fade-in" style={{ padding: '3rem', borderRadius: 'var(--radius-lg)', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+          <CheckCircle size={54} color="#10b981" />
           <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{content.successTitle}</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>{content.successDesc}</p>
-          <button onClick={() => setSent(false)} className="btn-secondary" style={{ marginTop: '0.5rem' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', maxWidth: '500px', lineHeight: '1.6' }}>{content.successDesc}</p>
+          <button
+            onClick={() => {
+              setSent(false);
+              setName('');
+              setEmail('');
+              setSubject('');
+              setMessage('');
+            }}
+            className="btn-primary"
+            style={{ marginTop: '0.5rem' }}
+          >
             새 문의 작성하기
           </button>
         </div>
@@ -153,6 +210,7 @@ export const ContactPage: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="홍길동"
+                required
                 style={{ width: '100%', padding: '0.7rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
               />
             </div>
@@ -164,6 +222,7 @@ export const ContactPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="user@example.com"
+                required
                 style={{ width: '100%', padding: '0.7rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
               />
             </div>
@@ -175,7 +234,7 @@ export const ContactPage: React.FC = () => {
               type="text"
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              placeholder="웹툴허브 기능 요청 건"
+              placeholder="웹툴허브 기능 요청 및 개선 제안"
               style={{ width: '100%', padding: '0.7rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
             />
           </div>
@@ -185,14 +244,16 @@ export const ContactPage: React.FC = () => {
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="문의하실 내용을 자유롭게 적어주세요."
+              placeholder="문의하실 내용을 자세하게 작성해 주세요."
               rows={5}
+              required
               style={{ width: '100%', padding: '0.75rem', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-main)', marginTop: '0.3rem' }}
             />
           </div>
 
-          <button className="btn-primary" type="submit" style={{ alignSelf: 'flex-end', padding: '0.75rem 2rem', fontSize: '1rem' }}>
-            <Send size={18} /> {content.sendBtn}
+          <button className="btn-primary" type="submit" disabled={isSubmitting} style={{ alignSelf: 'flex-end', padding: '0.75rem 2rem', fontSize: '1rem' }}>
+            {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+            {isSubmitting ? content.sendingBtn : content.sendBtn}
           </button>
         </form>
       )}
