@@ -20,7 +20,7 @@ export const QrGeneratorPage: React.FC = () => {
   const [wifiPass, setWifiPass] = useState<string>('12345678');
   const [wifiEnc, setWifiEnc] = useState<'WPA' | 'WEP' | 'nopass'>('WPA');
   const [phoneNum, setPhoneNum] = useState<string>('010-1234-5678');
-  const [emailAddr, setEmailAddr] = useState<string>('admin@yhdeabba.com');
+  const [emailAddr, setEmailAddr] = useState<string>('yh.de.abba@gmail.com');
 
   // Styling Options
   const [fgColor, setFgColor] = useState<string>('#0f172a');

@@ -47,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
 
           <div>
-            © 2026 WebToolHub (admin@yhdeabba.com). All rights reserved.
+            © 2026 WebToolHub (yh.de.abba@gmail.com). All rights reserved.
           </div>
         </div>
 

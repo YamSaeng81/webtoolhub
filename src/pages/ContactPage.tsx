@@ -18,7 +18,7 @@ export const ContactPage: React.FC = () => {
       title: '문의하기 & 피드백 (Contact Us)',
       subTitle: 'WebToolHub 서비스 개선 제안, 툴 추가 요청, 제휴 및 버그 제보',
       emailTitle: '공식 운영자 이메일 문의',
-      emailDesc: 'admin@yhdeabba.com 에 직접 메일을 보내시거나 아래 문의 서식을 이용해 주세요.',
+      emailDesc: 'yh.de.abba@gmail.com 에 직접 메일을 보내시거나 아래 문의 서식을 이용해 주세요.',
       formTitle: '1:1 빠른 문의 및 피드백 작성',
       nameLabel: '성함 / 닉네임',
       emailLabel: '이메일 주소 (답변 받을 메일)',
@@ -32,7 +32,7 @@ export const ContactPage: React.FC = () => {
       title: 'Contact Us & Feedback',
       subTitle: 'Suggestions, feature requests, partnerships, and bug reports',
       emailTitle: 'Official Support Email',
-      emailDesc: 'Feel free to email us directly at admin@yhdeabba.com or use the form below.',
+      emailDesc: 'Feel free to email us directly at yh.de.abba@gmail.com or use the form below.',
       formTitle: '1:1 Fast Support & Feedback Form',
       nameLabel: 'Your Name / Nickname',
       emailLabel: 'Email Address for Reply',
@@ -46,7 +46,7 @@ export const ContactPage: React.FC = () => {
       title: 'Contacto y Comentarios',
       subTitle: 'Sugerencias, solicitudes de funciones y soporte',
       emailTitle: 'Correo electrónico oficial',
-      emailDesc: 'Envíenos un correo electrónico a admin@yhdeabba.com',
+      emailDesc: 'Envíenos un correo electrónico a yh.de.abba@gmail.com',
       formTitle: 'Formulario de contacto rápido 1:1',
       nameLabel: 'Su nombre',
       emailLabel: 'Dirección de correo electrónico',
@@ -60,7 +60,7 @@ export const ContactPage: React.FC = () => {
       title: '联系我们 (Contact Us)',
       subTitle: '功能建议、新工具请求、商务合作及 Bug 反馈',
       emailTitle: '官方支持电子邮箱',
-      emailDesc: '请发送邮件至 admin@yhdeabba.com 或使用下方的快速表格。',
+      emailDesc: '请发送邮件至 yh.de.abba@gmail.com 或使用下方的快速表格。',
       formTitle: '1:1 快速联系与反馈表单',
       nameLabel: '您的姓名 / 昵称',
       emailLabel: '回复电子邮箱',
@@ -74,7 +74,7 @@ export const ContactPage: React.FC = () => {
       title: 'お問い合わせ (Contact Us)',
       subTitle: 'サービス改善のご提案、機能リクエスト、バグ報告',
       emailTitle: '公式サポートメール',
-      emailDesc: 'admin@yhdeabba.com まで直接メールを送信するか、以下のフォームをご利用ください。',
+      emailDesc: 'yh.de.abba@gmail.com まで直接メールを送信するか、以下のフォームをご利用ください。',
       formTitle: '1:1 お問い合わせフォーム',
       nameLabel: 'お名前 / ニックネーム',
       emailLabel: '返信用メールアドレス',
@@ -88,7 +88,7 @@ export const ContactPage: React.FC = () => {
     title: 'Contact Us & Feedback',
     subTitle: 'Suggestions, feature requests, partnerships, and bug reports',
     emailTitle: 'Official Support Email',
-    emailDesc: 'Feel free to email us directly at admin@yhdeabba.com or use the form below.',
+    emailDesc: 'Feel free to email us directly at yh.de.abba@gmail.com or use the form below.',
     formTitle: '1:1 Fast Support & Feedback Form',
     nameLabel: 'Your Name / Nickname',
     emailLabel: 'Email Address for Reply',
@@ -123,8 +123,8 @@ export const ContactPage: React.FC = () => {
         <div>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 700 }}>{content.emailTitle}</h3>
           <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{content.emailDesc}</p>
-          <a href="mailto:admin@yhdeabba.com" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '0.4rem', display: 'inline-block' }}>
-            ✉️ admin@yhdeabba.com
+          <a href="mailto:yh.de.abba@gmail.com" style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent-primary)', marginTop: '0.4rem', display: 'inline-block' }}>
+            ✉️ yh.de.abba@gmail.com
           </a>
         </div>
       </div>
