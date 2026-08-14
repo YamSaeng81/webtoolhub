@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, Shield, Lock } from 'lucide-react';
+import { Wrench, Shield, Lock, Info, Mail } from 'lucide-react';
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -20,21 +20,24 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.85rem' }}>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/community/feedback')}>
-              Privacy Policy
+          <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', flexWrap: 'wrap' }}>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }} onClick={() => onNavigate && onNavigate('/about')}>
+              <Info size={14} /> About Us
             </span>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/community/feedback')}>
-              Terms of Service
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }} onClick={() => onNavigate && onNavigate('/contact')}>
+              <Mail size={14} /> Contact Us
             </span>
             <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/community/feedback')}>
               Feedback Board
+            </span>
+            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/about')}>
+              Privacy Policy
             </span>
           </div>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem', fontSize: '0.8rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               <Lock size={14} color="#10b981" /> 100% In-Browser Privacy Protection
             </span>
@@ -44,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           </div>
 
           <div>
-            © 2026 WebToolHub. All rights reserved. Powered by Antigravity Engine.
+            © 2026 WebToolHub (admin@yhdeabba.com). All rights reserved.
           </div>
         </div>
 

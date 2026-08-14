@@ -7,6 +7,9 @@ import { Home } from './pages/Home';
 import { trackPageView } from './utils/analytics';
 
 // Pages Import
+import { AboutPage } from './pages/AboutPage';
+import { ContactPage } from './pages/ContactPage';
+
 import { MergePdfPage } from './pages/pdf/MergePdfPage';
 import { CompressPdfPage } from './pages/pdf/CompressPdfPage';
 import { RotatePdfPage } from './pages/pdf/RotatePdfPage';
@@ -75,6 +78,12 @@ export default function App() {
       case '/':
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
 
+      // 애드센스 필수 요구사항 페이지 ⭐
+      case '/about':
+        return <AboutPage />;
+      case '/contact':
+        return <ContactPage />;
+
       // 📄 PDF Tools (총 9개 라우트)
       case '/pdf/merge':
         return <MergePdfPage />;
@@ -95,7 +104,7 @@ export default function App() {
       case '/pdf/protect':
         return <PdfProtectPage />;
 
-      // 🖼️ IMAGE (신규 누끼따기 & QR코드 추가) ⭐
+      // 🖼️ IMAGE
       case '/image/bg-remover':
         return <ImageBgRemoverPage />;
       case '/image/qr-generator':
@@ -109,7 +118,7 @@ export default function App() {
       case '/image/favicon-generator':
         return <FaviconGeneratorPage />;
 
-      // 🎬 MEDIA (신규 GIF 제작기 포함 총 6개 라우트) ⭐
+      // 🎬 MEDIA
       case '/media/gif-maker':
         return <GifMakerPage />;
       case '/media/video-to-mp3':
