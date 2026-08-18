@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { GlobalNoticeBanner } from './components/common/GlobalNoticeBanner';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
@@ -156,6 +157,9 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-primary)' }}>
+      {/* 🚨 실시간 글로벌 긴급/이벤트 공지 배너 */}
+      <GlobalNoticeBanner />
+
       <Header
         currentPath={currentPath}
         onNavigate={handleNavigate}

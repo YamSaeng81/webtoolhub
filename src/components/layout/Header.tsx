@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Wrench, Sun, Moon, Search, Layers, Globe, Menu, X } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { LANGUAGE_OPTIONS } from '../../config/i18n';
+import { trackSearchQuery } from '../../utils/analytics';
 
 interface HeaderProps {
   currentPath: string;
@@ -19,6 +20,15 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch, onToggleMo
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // 검색어 트래킹 디바운스 (1.5초 후 트래킹)
+  useEffect(() => {
+    if (!searchQuery.trim()) return;
+    const timer = setTimeout(() => {
+      trackSearchQuery(searchQuery);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));

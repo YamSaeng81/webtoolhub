@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import type { AdUnitProps } from '../../types';
+import { trackAdImpression, trackAdClick } from '../../utils/analytics';
 
 declare global {
   interface Window {
@@ -14,6 +15,7 @@ export const AdBanner: React.FC<AdUnitProps> = ({
   className,
 }) => {
   useEffect(() => {
+    trackAdImpression(slotId);
     try {
       if (typeof window !== 'undefined') {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -26,6 +28,7 @@ export const AdBanner: React.FC<AdUnitProps> = ({
   return (
     <div
       className={`ad-container ${className || ''}`}
+      onClick={() => trackAdClick(slotId)}
       style={{
         margin: '1rem 0',
         padding: '0.75rem',

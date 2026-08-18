@@ -1,10 +1,15 @@
 /**
- * WebToolHub 전용 고도화 Analytics & 관리자 통계 트래커
+ * WebToolHub 전용 고도화 Analytics & 관리자 통계 트래커 (Enterprise Full-Package)
  * - Google Analytics 4 (GA4) 연동
  * - 접속 국가/도시 GeoIP 분석 (국기, 국가명, 도시)
  * - 접속 디바이스/브라우저/OS 분석 (Desktop / Mobile / Tablet)
- * - 최근 7일 일자별 순 방문자(UV) & 페이지뷰(PV) 히스토리
- * - 15개 툴별 실시간 사용량 랭킹 & 비율 (10초 쿨다운 디바운스 탑재 ⭐)
+ * - 최근 일자별 순 방문자(UV) & 페이지뷰(PV) 히스토리
+ * - 툴별 실시간 사용량 랭킹 & 비율 (10초 쿨다운 디바운스)
+ * - 💰 광고 슬롯별 노출량(Impression) & 클릭(Click/CTR) 트래커
+ * - 🔍 실시간 인기 검색어 트래커
+ * - ⚡ 툴별 에러 로그 수집 및 시스템 헬스체크
+ * - 🚨 사이트 전체 실시간 긴급 공지/이벤트 배너 상태 관리
+ * - 💾 데이터 백업 (JSON / CSV 내보내기) & 1클릭 복구 (Import)
  */
 
 export interface ToolUsageStat {
@@ -35,6 +40,34 @@ export interface DailyVisitorRecord {
   pv: number;
 }
 
+export interface AdStat {
+  slotId: string;
+  impressions: number;
+  clicks: number;
+}
+
+export interface SearchStat {
+  keyword: string;
+  count: number;
+  lastSearchedAt: string;
+}
+
+export interface ToolErrorLog {
+  id: string;
+  toolId: string;
+  toolName: string;
+  errorMessage: string;
+  timestamp: string;
+}
+
+export interface GlobalBannerConfig {
+  enabled: boolean;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'event';
+  linkUrl?: string;
+  linkText?: string;
+}
+
 export interface AnalyticsSummary {
   totalPageviews: number;
   todayVisitors: number;
@@ -42,9 +75,14 @@ export interface AnalyticsSummary {
   geoStats: Record<string, GeoStat>;
   deviceStats: Record<string, DeviceStat>;
   dailyHistory: Record<string, DailyVisitorRecord>;
+  adStats: Record<string, AdStat>;
+  searchStats: Record<string, SearchStat>;
+  errorLogs: ToolErrorLog[];
+  globalBanner?: GlobalBannerConfig;
 }
 
-const STORAGE_KEY = 'webtoolhub_analytics_v3';
+const STORAGE_KEY = 'webtoolhub_analytics_v4';
+const BANNER_STORAGE_KEY = 'webtoolhub_global_banner';
 const toolLastTrackedTimes: Record<string, number> = {};
 
 declare global {
@@ -84,7 +122,17 @@ function getDeviceInfo(): { deviceType: 'Desktop' | 'Mobile' | 'Tablet'; browser
  */
 function loadAnalyticsData(): AnalyticsSummary {
   if (typeof window === 'undefined') {
-    return { totalPageviews: 0, todayVisitors: 0, toolStats: {}, geoStats: {}, deviceStats: {}, dailyHistory: {} };
+    return {
+      totalPageviews: 0,
+      todayVisitors: 0,
+      toolStats: {},
+      geoStats: {},
+      deviceStats: {},
+      dailyHistory: {},
+      adStats: {},
+      searchStats: {},
+      errorLogs: [],
+    };
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -96,6 +144,9 @@ function loadAnalyticsData(): AnalyticsSummary {
       if (!parsed.geoStats) parsed.geoStats = {};
       if (!parsed.deviceStats) parsed.deviceStats = {};
       if (!parsed.dailyHistory) parsed.dailyHistory = {};
+      if (!parsed.adStats) parsed.adStats = {};
+      if (!parsed.searchStats) parsed.searchStats = {};
+      if (!parsed.errorLogs) parsed.errorLogs = [];
 
       if (parsed.lastDate !== todayStr) {
         parsed.todayVisitors = 0;
@@ -114,6 +165,9 @@ function loadAnalyticsData(): AnalyticsSummary {
     geoStats: {},
     deviceStats: {},
     dailyHistory: {},
+    adStats: {},
+    searchStats: {},
+    errorLogs: [],
   };
 }
 
@@ -203,13 +257,12 @@ function getFlagEmoji(countryCode: string) {
 }
 
 /**
- * 2. 툴 사용 횟수 추적 (10초 쿨다운 디바운스 적용 ⭐)
+ * 2. 툴 사용 횟수 추적 (10초 쿨다운 디바운스)
  */
 export function trackToolUsage(toolId: string, toolName: string) {
   const now = Date.now();
   const lastTracked = toolLastTrackedTimes[toolId] || 0;
 
-  // 10초 이내에 연속으로 호출된 경우 중복 집계 무시 (타이핑 무한 카운트 방지 ⭐)
   if (now - lastTracked < 10000) {
     return;
   }
@@ -239,7 +292,170 @@ export function trackToolUsage(toolId: string, toolName: string) {
 }
 
 /**
- * 3. 비정상적으로 부풀려진 툴 카운터 정상화/보정 (관리자 전용) ⭐
+ * 3. 💰 광고 슬롯 노출(Impression) 및 클릭(Click) 추적
+ */
+export function trackAdImpression(slotId: string) {
+  const data = loadAnalyticsData();
+  if (!data.adStats) data.adStats = {};
+  if (!data.adStats[slotId]) {
+    data.adStats[slotId] = { slotId, impressions: 0, clicks: 0 };
+  }
+  data.adStats[slotId].impressions += 1;
+  saveAnalyticsData(data);
+}
+
+export function trackAdClick(slotId: string) {
+  const data = loadAnalyticsData();
+  if (!data.adStats) data.adStats = {};
+  if (!data.adStats[slotId]) {
+    data.adStats[slotId] = { slotId, impressions: 1, clicks: 0 };
+  }
+  data.adStats[slotId].clicks += 1;
+  saveAnalyticsData(data);
+
+  if (window.gtag) {
+    window.gtag('event', 'ad_click', { ad_slot: slotId });
+  }
+}
+
+/**
+ * 4. 🔍 검색어 트래킹
+ */
+export function trackSearchQuery(keyword: string) {
+  const trimmed = keyword.trim().toLowerCase();
+  if (!trimmed || trimmed.length < 2) return;
+
+  const data = loadAnalyticsData();
+  if (!data.searchStats) data.searchStats = {};
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  if (!data.searchStats[trimmed]) {
+    data.searchStats[trimmed] = { keyword: trimmed, count: 0, lastSearchedAt: todayStr };
+  }
+  data.searchStats[trimmed].count += 1;
+  data.searchStats[trimmed].lastSearchedAt = todayStr;
+
+  saveAnalyticsData(data);
+}
+
+/**
+ * 5. ⚡ 툴 에러 로그 수집
+ */
+export function trackToolError(toolId: string, toolName: string, errorMessage: string) {
+  const data = loadAnalyticsData();
+  if (!data.errorLogs) data.errorLogs = [];
+
+  const newLog: ToolErrorLog = {
+    id: `err-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    toolId,
+    toolName,
+    errorMessage: errorMessage.slice(0, 300),
+    timestamp: new Date().toLocaleString('ko-KR'),
+  };
+
+  data.errorLogs = [newLog, ...data.errorLogs.slice(0, 49)]; // 최대 50건 유지
+  saveAnalyticsData(data);
+}
+
+export function clearErrorLogs() {
+  const data = loadAnalyticsData();
+  data.errorLogs = [];
+  saveAnalyticsData(data);
+}
+
+/**
+ * 6. 🚨 글로벌 공지 배너 제어
+ */
+export function getGlobalBanner(): GlobalBannerConfig {
+  if (typeof window === 'undefined') {
+    return { enabled: false, message: '', type: 'info' };
+  }
+  const saved = localStorage.getItem(BANNER_STORAGE_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      // fallback
+    }
+  }
+  return { enabled: false, message: '', type: 'info' };
+}
+
+export function setGlobalBanner(config: GlobalBannerConfig) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(BANNER_STORAGE_KEY, JSON.stringify(config));
+  window.dispatchEvent(new Event('webtoolhub_banner_updated'));
+}
+
+/**
+ * 7. 💾 데이터 백업 및 복원 (Export / Import / Reset)
+ */
+export function exportAllAnalyticsData(): string {
+  const data = loadAnalyticsData();
+  const feedbacks = localStorage.getItem('webtoolhub_feedbacks') || '[]';
+  const banner = getGlobalBanner();
+
+  return JSON.stringify(
+    {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      analytics: data,
+      feedbacks: JSON.parse(feedbacks),
+      globalBanner: banner,
+    },
+    null,
+    2
+  );
+}
+
+export function exportAnalyticsToCsv(): string {
+  const data = loadAnalyticsData();
+  const toolStats = Object.values(data.toolStats || {});
+  
+  let csv = '\uFEFF'; // UTF-8 BOM for Excel
+  csv += '순위,도구 ID,도구 이름,실행 횟수,최근 실행일\n';
+  
+  toolStats
+    .sort((a, b) => b.count - a.count)
+    .forEach((tool, idx) => {
+      csv += `${idx + 1},"${tool.toolId}","${tool.toolName}",${tool.count},${tool.lastUsedAt}\n`;
+    });
+
+  csv += '\n날짜,순 방문자(UV),총 페이지뷰(PV)\n';
+  Object.values(data.dailyHistory || {})
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .forEach((d) => {
+      csv += `${d.date},${d.uv},${d.pv}\n`;
+    });
+
+  return csv;
+}
+
+export function importAnalyticsData(jsonString: string): boolean {
+  try {
+    const parsed = JSON.parse(jsonString);
+    if (parsed.analytics) {
+      saveAnalyticsData(parsed.analytics);
+    }
+    if (parsed.feedbacks) {
+      localStorage.setItem('webtoolhub_feedbacks', JSON.stringify(parsed.feedbacks));
+    }
+    if (parsed.globalBanner) {
+      setGlobalBanner(parsed.globalBanner);
+    }
+    return true;
+  } catch (e) {
+    console.error('Import failed:', e);
+    return false;
+  }
+}
+
+export function resetAllAnalytics() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/**
+ * 8. 비정상 툴 카운터 보정
  */
 export function resetToolStatCount(toolId: string, newCount: number = 1) {
   const data = loadAnalyticsData();
@@ -250,7 +466,7 @@ export function resetToolStatCount(toolId: string, newCount: number = 1) {
 }
 
 /**
- * 4. 관리자 통계 수치 전체 반환
+ * 9. 관리자 통계 수치 전체 반환
  */
 export function getAnalyticsSummary(): AnalyticsSummary {
   return loadAnalyticsData();
