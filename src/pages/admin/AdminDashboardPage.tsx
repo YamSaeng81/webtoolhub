@@ -45,6 +45,10 @@ import {
   AlertTriangle,
   Cpu,
   HardDrive,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -60,6 +64,8 @@ const ADMIN_PASSWORD_HASH = '1f654b9d0e14bf9d7ef84976c66cf17f698a9fa6f164ce68971
 
 type AdminTab = 'overview' | 'ads' | 'search' | 'banner' | 'health' | 'backup' | 'feedback';
 
+const FEEDBACKS_PER_PAGE = 10;
+
 export const AdminDashboardPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [adminPass, setAdminPass] = useState<string>('');
@@ -68,6 +74,10 @@ export const AdminDashboardPage: React.FC = () => {
   });
   const [posts, setPosts] = useState<FeedbackPost[]>([]);
   const [, setRefreshCount] = useState<number>(0);
+
+  // 피드백 관리 탭: 페이징 & 상세 모달 팝업 상태 ⭐
+  const [feedbackPage, setFeedbackPage] = useState<number>(1);
+  const [selectedFeedback, setSelectedFeedback] = useState<FeedbackPost | null>(null);
 
   // 글로벌 공지 배너 상태
   const [bannerConfig, setBannerConfigState] = useState<GlobalBannerConfig>(() => getGlobalBanner());
@@ -95,6 +105,10 @@ export const AdminDashboardPage: React.FC = () => {
     media: toolStatsList.filter((t) => t.toolId.startsWith('media-')).reduce((sum, t) => sum + t.count, 0),
     text: toolStatsList.filter((t) => t.toolId.startsWith('text-')).reduce((sum, t) => sum + t.count, 0),
   };
+
+  // 피드백 페이징 계산
+  const totalFeedbackPages = Math.max(1, Math.ceil(posts.length / FEEDBACKS_PER_PAGE));
+  const displayedFeedbacks = posts.slice((feedbackPage - 1) * FEEDBACKS_PER_PAGE, feedbackPage * FEEDBACKS_PER_PAGE);
 
   useEffect(() => {
     hashPassword('!Iloveyhde1').then((h) => {
@@ -142,6 +156,13 @@ export const AdminDashboardPage: React.FC = () => {
     const nextPosts = posts.filter((p) => p.id !== id);
     setPosts(nextPosts);
     localStorage.setItem('webtoolhub_feedbacks', JSON.stringify(nextPosts));
+    if (selectedFeedback && selectedFeedback.id === id) {
+      setSelectedFeedback(null);
+    }
+    // 페이지 초과 시 이전 페이지로 조정
+    if ((feedbackPage - 1) * FEEDBACKS_PER_PAGE >= nextPosts.length && feedbackPage > 1) {
+      setFeedbackPage((p) => p - 1);
+    }
   };
 
   const handleSaveBanner = (e: React.FormEvent) => {
@@ -206,19 +227,19 @@ export const AdminDashboardPage: React.FC = () => {
       case 'bug':
         return (
           <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-            <Bug size={12} /> Bug
+            <Bug size={12} /> 버그
           </span>
         );
       case 'feature':
         return (
           <span style={{ background: 'rgba(99, 102, 241, 0.2)', color: 'var(--accent-primary)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-            <Sparkles size={12} /> Feature
+            <Sparkles size={12} /> 기능요청
           </span>
         );
       default:
         return (
           <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
-            <Lightbulb size={12} /> General
+            <Lightbulb size={12} /> 일반의견
           </span>
         );
     }
@@ -229,7 +250,7 @@ export const AdminDashboardPage: React.FC = () => {
       <ToolHeader
         toolId="admin-dashboard"
         title="통합 관리자 엔터프라이즈 센터 (Admin Master)"
-        description="실시간 트래픽, 광고 수익화, 인기 검색어, 글로벌 공지 배너 및 시스템 헬스를 총괄 제어합니다."
+        description="실시간 트래픽, 광고 수익화, 인기 검색어, 글로벌 공지 배너 및 피드백 관리를 총괄 제어합니다."
         badgeText="Enterprise Security"
       />
 
@@ -382,7 +403,7 @@ export const AdminDashboardPage: React.FC = () => {
                   fontSize: '0.85rem',
                 }}
               >
-                <ThumbsUp size={15} /> 💬 피드백 ({posts.length})
+                <ThumbsUp size={15} /> 💬 피드백 관리 ({posts.length})
               </button>
             </div>
           </div>
@@ -871,45 +892,257 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* 7. 💬 피드백 관리 탭 */}
+          {/* 7. 💬 피드백 관리 탭 (10개씩 페이징 & 상세 팝업 모달) ⭐ */}
           {activeTab === 'feedback' && (
-            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  💬 전체 커뮤니티 피드백 관리 ({posts.length}건)
-                </h3>
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.15rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
+                      <FileText size={20} /> 등록된 소통 피드백 목록 (총 {posts.length}건)
+                    </h3>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                      목록의 제목이나 '상세보기' 버튼을 클릭하면 팝업으로 전체 내용을 확인하실 수 있습니다.
+                    </p>
+                  </div>
+
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '0.3rem 0.7rem', borderRadius: 'var(--radius-full)' }}>
+                    페이지 {feedbackPage} / {totalFeedbackPages}
+                  </span>
+                </div>
 
                 {posts.length === 0 ? (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>등록된 피드백이 없습니다.</p>
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-muted)' }}>
+                    등록된 사용자 피드백이 없습니다.
+                  </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    {posts.map((post) => (
-                      <div key={post.id} style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{post.nickname}</span>
-                            {categoryBadge(post.category)}
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{post.createdAt}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                              <ThumbsUp size={12} /> {post.likes}
-                            </span>
-                            <button
-                              onClick={() => handleDeletePost(post.id)}
-                              style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.88rem' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '50px', textAlign: 'center' }}>No</th>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '100px' }}>분류</th>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '120px' }}>작성자</th>
+                          <th style={{ padding: '0.75rem 0.8rem' }}>내용 (제목 요약)</th>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '100px', textAlign: 'center' }}>작성일</th>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '70px', textAlign: 'center' }}>좋아요</th>
+                          <th style={{ padding: '0.75rem 0.8rem', width: '130px', textAlign: 'center' }}>관리</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {displayedFeedbacks.map((post, idx) => {
+                          const itemNo = posts.length - ((feedbackPage - 1) * FEEDBACKS_PER_PAGE + idx);
+                          const summary = post.content.length > 45 ? post.content.slice(0, 45) + '...' : post.content;
+                          return (
+                            <tr
+                              key={post.id}
+                              style={{
+                                borderBottom: '1px solid var(--border-color)',
+                                cursor: 'pointer',
+                                transition: 'background 0.2s',
+                              }}
+                              className="table-row-hover"
+                              onClick={() => setSelectedFeedback(post)}
                             >
-                              <Trash2 size={12} /> 삭제
-                            </button>
-                          </div>
-                        </div>
-                        <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: 0 }}>
-                          {post.content}
-                        </p>
-                      </div>
-                    ))}
+                              <td style={{ padding: '0.75rem 0.8rem', textAlign: 'center', color: 'var(--text-muted)', fontWeight: 600 }}>
+                                {itemNo}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem' }}>
+                                {categoryBadge(post.category)}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                                {post.nickname}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', fontWeight: 500, color: 'var(--text-main)' }}>
+                                <span style={{ textDecoration: 'underline', textUnderlineOffset: '3px' }}>
+                                  {summary}
+                                </span>
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                                {post.createdAt}
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', textAlign: 'center', color: 'var(--accent-primary)', fontWeight: 700 }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                                  <ThumbsUp size={12} /> {post.likes}
+                                </span>
+                              </td>
+                              <td style={{ padding: '0.75rem 0.8rem', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem' }}>
+                                  <button
+                                    onClick={() => setSelectedFeedback(post)}
+                                    className="btn-secondary"
+                                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)' }}
+                                    title="상세 내용 팝업 열기"
+                                  >
+                                    <Eye size={12} /> 보기
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeletePost(post.id)}
+                                    style={{ background: 'rgba(239, 68, 68, 0.15)', border: 'none', color: '#ef4444', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.75rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}
+                                    title="삭제"
+                                  >
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 )}
+
+                {/* 10개 단위 페이징 네비게이션 ⭐ */}
+                {totalFeedbackPages > 1 && (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', marginTop: '1rem' }}>
+                    <button
+                      onClick={() => setFeedbackPage((p) => Math.max(1, p - 1))}
+                      disabled={feedbackPage === 1}
+                      className="btn-secondary"
+                      style={{ padding: '0.4rem 0.7rem', fontSize: '0.85rem', opacity: feedbackPage === 1 ? 0.4 : 1 }}
+                    >
+                      <ChevronLeft size={16} /> 이전
+                    </button>
+
+                    {Array.from({ length: totalFeedbackPages }, (_, i) => i + 1).map((num) => (
+                      <button
+                        key={num}
+                        onClick={() => setFeedbackPage(num)}
+                        className={feedbackPage === num ? 'btn-primary' : 'btn-secondary'}
+                        style={{
+                          width: '34px',
+                          height: '34px',
+                          padding: 0,
+                          fontSize: '0.85rem',
+                          fontWeight: feedbackPage === num ? 800 : 500,
+                          borderRadius: 'var(--radius-sm)',
+                        }}
+                      >
+                        {num}
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => setFeedbackPage((p) => Math.min(totalFeedbackPages, p + 1))}
+                      disabled={feedbackPage === totalFeedbackPages}
+                      className="btn-secondary"
+                      style={{ padding: '0.4rem 0.7rem', fontSize: '0.85rem', opacity: feedbackPage === totalFeedbackPages ? 0.4 : 1 }}
+                    >
+                      다음 <ChevronRight size={16} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 팝업 모달: 피드백 상세 내용 뷰어 ⭐ */}
+          {selectedFeedback && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0, 0, 0, 0.7)',
+                backdropFilter: 'blur(6px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '1.5rem',
+              }}
+              onClick={() => setSelectedFeedback(null)}
+            >
+              <div
+                className="glass-panel animate-fade-in"
+                style={{
+                  maxWidth: '560px',
+                  width: '100%',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '2rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1.25rem',
+                  border: '1px solid var(--border-color)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                  background: 'var(--bg-primary)',
+                  position: 'relative',
+                  maxHeight: '90vh',
+                  overflowY: 'auto',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* 모달 헤더 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {categoryBadge(selectedFeedback.category)}
+                      <span style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                        {selectedFeedback.nickname} 님의 피드백
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      작성일: {selectedFeedback.createdAt} | 좋아요 {selectedFeedback.likes}개
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedFeedback(null)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      padding: '0.2rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '50%',
+                    }}
+                    title="닫기"
+                  >
+                    <X size={22} />
+                  </button>
+                </div>
+
+                {/* 모달 본문 내용 */}
+                <div style={{ padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', minHeight: '120px' }}>
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text-main)', lineHeight: '1.7', whiteSpace: 'pre-wrap', margin: 0 }}>
+                    {selectedFeedback.content}
+                  </p>
+                </div>
+
+                {/* 모달 푸터 버튼 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <button
+                    onClick={() => handleDeletePost(selectedFeedback.id)}
+                    style={{
+                      background: 'rgba(239, 68, 68, 0.15)',
+                      border: '1px solid #ef4444',
+                      color: '#ef4444',
+                      padding: '0.5rem 1rem',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Trash2 size={15} /> 이 피드백 삭제
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedFeedback(null)}
+                    className="btn-primary"
+                    style={{ padding: '0.5rem 1.5rem', fontSize: '0.9rem' }}
+                  >
+                    확인 및 닫기
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -516,3 +516,8 @@ a {
   h2 { font-size: 1.3rem !important; }
   h3 { font-size: 1.1rem !important; }
 }
+
+.table-row-hover:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
