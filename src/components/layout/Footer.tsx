@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, Shield, Lock, Info, Mail } from 'lucide-react';
+import { Wrench, Shield, Lock, Info, Mail, ShieldCheck } from 'lucide-react';
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -20,11 +20,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', flexWrap: 'wrap' }}>
-            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }} onClick={() => onNavigate && onNavigate('/about')}>
+          <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.85rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => onNavigate && onNavigate('/about')}>
               <Info size={14} /> About Us
             </span>
-            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }} onClick={() => onNavigate && onNavigate('/contact')}>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => onNavigate && onNavigate('/contact')}>
               <Mail size={14} /> Contact Us
             </span>
             <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/community/feedback')}>
@@ -32,6 +32,25 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
             <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/about')}>
               Privacy Policy
+            </span>
+            <span
+              style={{
+                cursor: 'pointer',
+                fontWeight: 600,
+                color: 'var(--text-muted)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                padding: '0.2rem 0.5rem',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                transition: 'all 0.2s ease',
+              }}
+              title="관리자 마스터 대시보드"
+              onClick={() => onNavigate && onNavigate('/admin')}
+            >
+              <ShieldCheck size={14} color="#ec4899" /> Admin
             </span>
           </div>
         </div>

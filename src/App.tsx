@@ -9,6 +9,7 @@ import { trackPageView } from './utils/analytics';
 // Pages Import
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
 
 import { MergePdfPage } from './pages/pdf/MergePdfPage';
 import { CompressPdfPage } from './pages/pdf/CompressPdfPage';
@@ -83,6 +84,10 @@ export default function App() {
         return <AboutPage />;
       case '/contact':
         return <ContactPage />;
+
+      // 🛡️ 관리자 전용 독립 대시보드
+      case '/admin':
+        return <AdminDashboardPage />;
 
       // 📄 PDF Tools (총 9개 라우트)
       case '/pdf/merge':
