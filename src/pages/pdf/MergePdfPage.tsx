@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { mergeMultiplePdfs } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
@@ -183,6 +185,14 @@ export const MergePdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="merge-bottom" />
+
+      <ToolGuideSection
+        toolId="pdf-merge"
+        toolTitle="무료 초고속 PDF 병합기 (PDF Merger)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+
+

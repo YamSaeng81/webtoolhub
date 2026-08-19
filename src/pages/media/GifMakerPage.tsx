@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
@@ -394,6 +396,13 @@ export const GifMakerPage: React.FC = () => {
       )}
 
       <AdBanner slotId="gifmaker-bottom" />
+
+      <ToolGuideSection
+        toolId="media-gif-maker"
+        toolTitle="고화질 움직이는 GIF 짤 애니메이션 제작기 (GIF Maker)"
+        categoryName="미디어 & GIF 도구"
+      />
     </div>
   );
 };
+

@@ -245,6 +245,51 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
       {/* In-feed Bottom AdSense */}
       <AdBanner slotId="home-bottom-ad" format="auto" />
 
+      {/* 🌟 구글 검색/애드센스 친화형 플랫폼 특징 및 기술 칼럼 섹션 */}
+      <section className="glass-panel" style={{ padding: '2.5rem 2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+        <div>
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Why WebToolHub
+          </span>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.3rem' }}>
+            서버 업로드 없는 100% 클라이언트 브라우저 연산의 장점
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '0.5rem', lineHeight: 1.7 }}>
+            WebToolHub(웹툴허브)는 최신 웹 표준 기술(WebAssembly, HTML5 File System, Web Workers)을 도입하여, 사용자의 중요한 파일과 데이터가 중앙 서버로 단 1바이트도 전송되지 않고 로컬 단말기에서 즉시 안전하게 가공·변환되는 안전한 분산형 웹 유틸리티 서비스입니다.
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
+          <div style={{ padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#10b981', marginBottom: '0.4rem' }}>
+              🔒 완벽한 데이터 프라이버시
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              계약서, 금융 서류, 사생활 사진 등 중요한 파일이 외부 클라우드 서버에 남지 않아 데이터 유출 사고를 원천 차단합니다.
+            </p>
+          </div>
+
+          <div style={{ padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--accent-primary)', marginBottom: '0.4rem' }}>
+              ⚡ 네트워크 딜레이 0%의 초고속
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              업로드와 다운로드에 소요되는 불필요한 인터넷 대기 시간 없이, 기기 본연의 CPU/GPU 가속으로 0.1초 만에 완료됩니다.
+            </p>
+          </div>
+
+          <div style={{ padding: '1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#ec4899', marginBottom: '0.4rem' }}>
+              🌍 크로스 플랫폼 & 완전 무료
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Windows, Mac, iPhone, Android 어디서나 프로그램 설치나 로그인 없이 100% 무제한 무료로 모든 기능을 즐길 수 있습니다.
+            </p>
+          </div>
+        </div>
+      </section>
+
     </div>
   );
 };
+

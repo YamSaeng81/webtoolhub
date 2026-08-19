@@ -2,7 +2,17 @@ import React from 'react';
 import { ToolHeader } from '../components/common/ToolHeader';
 import { AdBanner } from '../components/ads/AdBanner';
 import { useLanguage } from '../context/LanguageContext';
-import { ShieldCheck, Sparkles, Globe, Lock, Zap } from 'lucide-react';
+import {
+  ShieldCheck,
+  Sparkles,
+  Globe,
+  Zap,
+
+  CheckCircle2,
+  HelpCircle,
+  Layers,
+  Cpu,
+} from 'lucide-react';
 
 export const AboutPage: React.FC = () => {
   const { language } = useLanguage();
@@ -34,78 +44,42 @@ export const AboutPage: React.FC = () => {
       feature3Title: '🌐 5 Languages Global i18n Support',
       feature3Desc: 'Supporting English, Korean, Spanish, Chinese, and Japanese for an intuitive global user experience.',
     },
-    es: {
-      title: 'Acerca de WebToolHub',
-      subTitle: '¡0% de carga en servidor! Centro de utilidades web inteligentes gratuito',
-      introTitle: '¿Qué es WebToolHub?',
-      introDesc:
-        'WebToolHub es una plataforma de utilidades web de próxima generación que prioriza la privacidad del usuario. Ofrecemos más de 24 herramientas esenciales como PDF, eliminación de fondo AI, creador de GIF y convertidor de video 100% en el navegador.',
-      feature1Title: '🔒 100% Privacidad en el navegador',
-      feature1Desc: 'Todo el procesamiento de archivos se ejecuta exclusivamente en su navegador.',
-      feature2Title: '⚡ Rendimiento súper rápido',
-      feature2Desc: 'Impulsado por WebAssembly para una conversión instantánea.',
-      feature3Title: '🌐 Soporte global en 5 idiomas',
-      feature3Desc: 'Compatible con español, inglés, coreano, chino y japonés.',
-    },
-    zh: {
-      title: '关于 WebToolHub (About Us)',
-      subTitle: '0% 服务器上传！100% 浏览器内存式免费智能 Web 工具中心',
-      introTitle: '什么是 WebToolHub？',
-      introDesc:
-        'WebToolHub 是优先考虑用户隐私和文件安全的新一代 Web 工具平台。我们在浏览器内部 100% 免费提供 24+ 种必需工具，包括 PDF 合并/压缩、AI 背景消除、GIF 制作、视频/音频转换和 QR 码生成。',
-      feature1Title: '🔒 100% 浏览器隐私保护 (无服务器上传)',
-      feature1Desc: '所有文件转换和 AI 处理均仅在您的浏览器内运行。',
-      feature2Title: '⚡ 0.1 秒极速性能 (WebAssembly)',
-      feature2Desc: '搭载 WebAssembly (WASM) 技术，无延迟即时处理。',
-      feature3Title: '🌐 5 种语言全球化支持',
-      feature3Desc: '支持中文、英文、韩文、西班牙文和日文。',
-    },
-    ja: {
-      title: 'WebToolHubについて (About Us)',
-      subTitle: 'サーバーアップロード0%！100%ブラウザメモリベースの無料スマートWebユーティリティ',
-      introTitle: 'WebToolHubとは？',
-      introDesc:
-        'WebToolHubは、ユーザーのプライバシーとセキュリティを最優先する次世代Webユーティリティプラットフォームです。PDF結合/圧縮、AI背景削除、GIF作成、動画/音声変換、QRコード生成など24種類以上の必須Webツールをブラウザ内で完全無料で提供します。',
-      feature1Title: '🔒 100% ブラウザプライバシー (サーバー送信なし)',
-      feature1Desc: 'すべての処理がブラウザ内のみで実行され、外部サーバーにファイルが送信されません。',
-      feature2Title: '⚡ 超高速0.1秒処理 (WebAssembly搭載)',
-      feature2Desc: '最新のWebAssembly技術で大容量動画やPDFも即座に処理。',
-      feature3Title: '🌐 5ヶ国語グローバル対応',
-      feature3Desc: '日本語、英語、韓国語、スペイン語、中国語に対応。',
-    },
-  }[language] || {
+  }[language === 'ko' ? 'ko' : 'en'] || {
     title: 'About WebToolHub',
     subTitle: '0% Server Upload! 100% Browser In-Memory Free Smart Web Utility Hub',
     introTitle: 'What is WebToolHub?',
     introDesc:
-      'WebToolHub is a next-generation web utility platform that prioritizes user privacy and document security. We offer 24+ essential tools including PDF merge/compress, AI background removal, GIF maker, video/audio converter, and QR generator for free, running 100% inside your browser.',
+      'WebToolHub is a next-generation web utility platform that prioritizes user privacy and document security.',
     feature1Title: '🔒 100% Browser Privacy (No Server Upload)',
     feature1Desc: 'All document conversion and AI processing run exclusively inside your web browser.',
     feature2Title: '⚡ Lightning Fast 0.1s Performance (WebAssembly)',
-    feature2Desc: 'Powered by WebAssembly (WASM) and Web Workers, handling files instantly without lag.',
+    feature2Desc: 'Powered by WebAssembly (WASM) and Web Workers.',
     feature3Title: '🌐 5 Languages Global i18n Support',
     feature3Desc: 'Supporting English, Korean, Spanish, Chinese, and Japanese.',
   };
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       <ToolHeader toolId="about" title={content.title} description={content.subTitle} badgeText="소개" />
 
       <AdBanner slotId="about-top" />
 
       {/* 서비스 소개 본문 */}
-      <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className="glass-panel" style={{ padding: '2.5rem 2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Sparkles size={24} /> {content.introTitle}
         </h2>
-        <p style={{ fontSize: '1.02rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
+        <p style={{ fontSize: '1.05rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
           {content.introDesc}
+        </p>
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.7', color: 'var(--text-muted)' }}>
+          기존의 많은 온라인 변환 사이트들은 사용자의 문서를 중앙 서버로 전송받아 변환한 후 다시 내려주는 방식을 사용합니다. 이 과정에서 개인정보 침해, 기업 기밀 누출, 서버 지연 및 용량 제한 등의 문제가 발생했습니다. WebToolHub는 이러한 한계를 극복하기 위해 최신 웹 표준 기술(WebAssembly, ONNX WebRuntime, HTML5 Canvas)을 활용하여 모든 연산을 클라이언트 엣지 디바이스에서 직접 수행하는 완전히 새로운 아키텍처를 도입했습니다.
         </p>
       </div>
 
       {/* 3대 핵심 특징 카드 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-        <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ShieldCheck size={26} />
           </div>
@@ -113,7 +87,7 @@ export const AboutPage: React.FC = () => {
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>{content.feature1Desc}</p>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Zap size={26} />
           </div>
@@ -121,7 +95,7 @@ export const AboutPage: React.FC = () => {
           <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>{content.feature2Desc}</p>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Globe size={26} />
           </div>
@@ -130,14 +104,90 @@ export const AboutPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 보안 및 운영 철학 */}
+      {/* 📊 기존 서버 방식 vs WebToolHub 비교표 */}
+      <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Layers size={20} /> 기존 서버 업로드 방식 vs WebToolHub 비교
+        </h3>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>
+                <th style={{ padding: '0.8rem 1rem' }}>비교 항목</th>
+                <th style={{ padding: '0.8rem 1rem', color: '#ef4444' }}>기존 웹 툴 사이트 (일반 방식)</th>
+                <th style={{ padding: '0.8rem 1rem', color: '#10b981' }}>WebToolHub (차세대 인메모리 방식)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '0.8rem 1rem', fontWeight: 700 }}>🔒 파일 보안성</td>
+                <td style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)' }}>외부 서버로 업로드되어 유출 위험 존재</td>
+                <td style={{ padding: '0.8rem 1rem', color: '#10b981', fontWeight: 700 }}>100% 브라우저 가상 메모리에서만 처리 (외부 유출 0%)</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '0.8rem 1rem', fontWeight: 700 }}>⚡ 처리 속도</td>
+                <td style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)' }}>업로드 및 다운로드 네트워크 통신 지연 발생</td>
+                <td style={{ padding: '0.8rem 1rem', color: 'var(--accent-primary)', fontWeight: 700 }}>업로드 없이 내 PC/모바일 CPU로 0.1초 즉시 변환</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '0.8rem 1rem', fontWeight: 700 }}>💾 파일 용량 제한</td>
+                <td style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)' }}>서버 트래픽 비용 문제로 10MB~50MB 제한 및 유료 결제 유도</td>
+                <td style={{ padding: '0.8rem 1rem', color: '#10b981', fontWeight: 700 }}>용량 제한 없는 평생 100% 완전 무료</td>
+              </tr>
+              <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                <td style={{ padding: '0.8rem 1rem', fontWeight: 700 }}>👤 회원가입 여부</td>
+                <td style={{ padding: '0.8rem 1rem', color: 'var(--text-muted)' }}>이메일 가입 및 결제 카드 등록 요구</td>
+                <td style={{ padding: '0.8rem 1rem', color: '#10b981', fontWeight: 700 }}>로그인 / 회원가입 전혀 없이 무제한 즉시 사용</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ⚙️ WebAssembly & 브라우저 샌드박스 기술 아키텍처 설명 */}
       <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(99, 102, 241, 0.05)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
         <h3 style={{ fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent-primary)' }}>
-          <Lock size={20} /> WebToolHub의 운영 철학 (Security & Transparency)
+          <Cpu size={20} /> WebToolHub의 핵심 기술 아키텍처 (Technology Stack)
         </h3>
-        <p style={{ fontSize: '0.95rem', lineHeight: '1.7', color: 'var(--text-main)' }}>
-          저희 WebToolHub는 사용자가 업로드하는 문서나 이미지, 비디오 파일에 포함된 민감한 데이터를 절대로 수집하거나 저장하지 않습니다. 최신 HTML5 File API와 WebAssembly 기술을 기반으로 전 과정이 사용자의 단말기(노트북, 스마트폰) 내부 메모리에서 독립 실행됩니다.
+        <p style={{ fontSize: '0.95rem', lineHeight: '1.8', color: 'var(--text-main)' }}>
+          WebToolHub는 C/C++ 및 Rust로 작성된 고성능 저수준 바이너리 라이브러리를 웹 표준 바이너리인 <strong>WebAssembly(WASM)</strong>로 컴파일하여 브라우저에서 직접 구동합니다. 또한 복잡한 이미지 누끼 분리 작업에는 <strong>ONNX WebRuntime</strong> 신경망 가속 엔진을 탑재하여 브라우저의 WebGL/WebGPU 가속을 이끌어냅니다. 이 모든 작업은 메인 UI 스레드를 방해하지 않도록 백그라운드 <strong>Web Workers</strong> 환경에서 멀티스레딩으로 매끄럽게 처리됩니다.
         </p>
+      </div>
+
+      {/* 자주 묻는 질문 FAQ */}
+      <div className="glass-panel" style={{ padding: '2rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <HelpCircle size={20} color="var(--accent-primary)" /> WebToolHub 플랫폼 관련 자주 묻는 질문 (FAQ)
+        </h3>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+          <div style={{ padding: '1rem 1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <CheckCircle2 size={16} color="var(--accent-primary)" /> Q. 정말로 서버에 파일이 업로드되지 않나요?
+            </span>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6', marginTop: '0.4rem', paddingLeft: '1.4rem' }}>
+              네, 사실입니다! 브라우저의 개발자 도구(F12) 네트워크(Network) 탭을 열어보시면, 100MB짜리 PDF나 동영상을 변환할 때도 외부 서버로 파일이 POST/PUT 전송되지 않고 순수 브라우저 메모리 안에서만 처리되는 것을 직접 기술적으로 검증하실 수 있습니다.
+            </p>
+          </div>
+
+          <div style={{ padding: '1rem 1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <CheckCircle2 size={16} color="var(--accent-primary)" /> Q. 서비스 이용료는 평생 무료인가요?
+            </span>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6', marginTop: '0.4rem', paddingLeft: '1.4rem' }}>
+              네. WebToolHub는 서버 인프라 유지 비용이 거의 들지 않는 혁신적인 분산 엣지 구조로 설계되었기 때문에 사용자에게 비용을 청구할 필요가 없습니다. 모든 도구는 언제나 100% 무료로 개방됩니다.
+            </p>
+          </div>
+
+          <div style={{ padding: '1rem 1.25rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <CheckCircle2 size={16} color="var(--accent-primary)" /> Q. 새로운 도구나 기능 제안은 어떻게 하나요?
+            </span>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: '1.6', marginTop: '0.4rem', paddingLeft: '1.4rem' }}>
+              상단 및 하단 메뉴의 <strong>[소통 & 피드백]</strong> 게시판 또는 <strong>[Contact Us]</strong> 문의하기 페이지를 통해 의견을 남겨주시면 관리자가 실시간으로 확인하여 적극적으로 반영하고 있습니다.
+            </p>
+          </div>
+        </div>
       </div>
 
       <AdBanner slotId="about-bottom" />

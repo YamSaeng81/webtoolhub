@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
@@ -172,6 +174,13 @@ export const ImageBgRemoverPage: React.FC = () => {
       )}
 
       <AdBanner slotId="bgremover-bottom" />
+
+      <ToolGuideSection
+        toolId="image-bg-remover"
+        toolTitle="AI 이미지 배경 제거 & 누끼 따기 (AI Background Remover)"
+        categoryName="이미지 & AI 도구"
+      />
     </div>
   );
 };
+
