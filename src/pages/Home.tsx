@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TOOLS_REGISTRY } from '../config/toolsRegistry';
 import { AdBanner } from '../components/ads/AdBanner';
 import { PrivacyBadge } from '../components/common/PrivacyBadge';
 import { useLanguage } from '../context/LanguageContext';
+import { isToolEnabled } from '../utils/analytics';
 import {
   Layers,
   Minimize2,
@@ -27,6 +28,7 @@ import {
   Zap,
   Lock,
   ArrowRight,
+  Wrench,
 } from 'lucide-react';
 import type { ToolCategory } from '../types';
 
@@ -37,6 +39,13 @@ interface HomeProps {
 
 export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
   const { language, t } = useLanguage();
+  const [, setToggleUpdate] = useState<number>(0);
+
+  useEffect(() => {
+    const handleToggle = () => setToggleUpdate((p) => p + 1);
+    window.addEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+    return () => window.removeEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+  }, []);
 
   const filteredTools = TOOLS_REGISTRY.filter(
     (tool) =>
@@ -131,20 +140,49 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
             </div>
           ) : (
             <div className="tools-grid">
-              {filteredTools.map((tool) => (
-                <div key={tool.id} className="glass-panel tool-card" onClick={() => onNavigate(tool.path)} style={{ cursor: 'pointer' }}>
-                  <div className="tool-icon">{renderIcon(tool.iconName)}</div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                    {tool.titleMap[language] || tool.title}
-                  </h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', flex: 1 }}>
-                    {tool.descriptionMap[language] || tool.description}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--accent-primary)', fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
-                    Open Tool <ArrowRight size={14} />
+              {filteredTools.map((tool) => {
+                const enabled = isToolEnabled(tool.id);
+                return (
+                  <div
+                    key={tool.id}
+                    className="glass-panel tool-card"
+                    onClick={() => onNavigate(tool.path)}
+                    style={{ cursor: 'pointer', opacity: enabled ? 1 : 0.65 }}
+                  >
+                    {!enabled && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '1rem',
+                          right: '1rem',
+                          background: 'rgba(245, 158, 11, 0.2)',
+                          border: '1px solid rgba(245, 158, 11, 0.4)',
+                          color: '#f59e0b',
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.5rem',
+                          borderRadius: 'var(--radius-full)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.2rem',
+                        }}
+                      >
+                        <Wrench size={10} /> 점검 중
+                      </span>
+                    )}
+                    <div className="tool-icon">{renderIcon(tool.iconName)}</div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                      {tool.titleMap[language] || tool.title}
+                    </h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', flex: 1 }}>
+                      {tool.descriptionMap[language] || tool.description}
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: enabled ? 'var(--accent-primary)' : 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
+                      {enabled ? 'Open Tool' : '점검 중'} <ArrowRight size={14} />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -162,59 +200,86 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
               </div>
 
               <div className="tools-grid">
-                {categoryTools.map((tool) => (
-                  <div
-                    key={tool.id}
-                    className="glass-panel tool-card"
-                    onClick={() => onNavigate(tool.path)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {tool.isPopular && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '1rem',
-                          right: '1rem',
-                          background: 'var(--accent-gradient)',
-                          color: '#ffffff',
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: 'var(--radius-full)',
-                        }}
-                      >
-                        Popular
-                      </span>
-                    )}
-                    {tool.isNew && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '1rem',
-                          right: '1rem',
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          color: '#ffffff',
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: 'var(--radius-full)',
-                        }}
-                      >
-                        NEW
-                      </span>
-                    )}
-                    <div className="tool-icon">{renderIcon(tool.iconName)}</div>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-                      {tool.titleMap[language] || tool.title}
-                    </h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', flex: 1 }}>
-                      {tool.descriptionMap[language] || tool.description}
-                    </p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--accent-primary)', fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
-                      Open Tool <ArrowRight size={14} />
+                {categoryTools.map((tool) => {
+                  const enabled = isToolEnabled(tool.id);
+                  return (
+                    <div
+                      key={tool.id}
+                      className="glass-panel tool-card"
+                      onClick={() => onNavigate(tool.path)}
+                      style={{ cursor: 'pointer', opacity: enabled ? 1 : 0.65 }}
+                    >
+                      {!enabled ? (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '1rem',
+                            right: '1rem',
+                            background: 'rgba(245, 158, 11, 0.2)',
+                            border: '1px solid rgba(245, 158, 11, 0.4)',
+                            color: '#f59e0b',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '0.2rem 0.5rem',
+                            borderRadius: 'var(--radius-full)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.2rem',
+                          }}
+                        >
+                          <Wrench size={10} /> 점검 중
+                        </span>
+                      ) : (
+                        <>
+                          {tool.isPopular && (
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'var(--accent-gradient)',
+                                color: '#ffffff',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: 'var(--radius-full)',
+                              }}
+                            >
+                              Popular
+                            </span>
+                          )}
+                          {tool.isNew && (
+                            <span
+                              style={{
+                                position: 'absolute',
+                                top: '1rem',
+                                right: '1rem',
+                                background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                                color: '#ffffff',
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: 'var(--radius-full)',
+                              }}
+                            >
+                              NEW
+                            </span>
+                          )}
+                        </>
+                      )}
+                      <div className="tool-icon">{renderIcon(tool.iconName)}</div>
+                      <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+                        {tool.titleMap[language] || tool.title}
+                      </h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', flex: 1 }}>
+                        {tool.descriptionMap[language] || tool.description}
+                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: enabled ? 'var(--accent-primary)' : 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600, marginTop: '0.5rem' }}>
+                        {enabled ? 'Open Tool' : '점검 중'} <ArrowRight size={14} />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
           );

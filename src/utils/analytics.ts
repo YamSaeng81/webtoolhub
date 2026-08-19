@@ -473,6 +473,73 @@ export function getAnalyticsSummary(): AnalyticsSummary {
 }
 
 /**
+ * 10. ⚙️ 메뉴 및 도구 활성화 / 비활성화 제어 (Feature Toggle)
+ */
+const DISABLED_TOOLS_KEY = 'webtoolhub_disabled_tools';
+const ADS_ENABLED_KEY = 'webtoolhub_ads_enabled';
+
+export function getDisabledTools(): string[] {
+  if (typeof window === 'undefined') return [];
+  const saved = localStorage.getItem(DISABLED_TOOLS_KEY);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export function isToolEnabled(toolId: string): boolean {
+  const disabled = getDisabledTools();
+  return !disabled.includes(toolId);
+}
+
+export function setToolEnabled(toolId: string, enabled: boolean) {
+  if (typeof window === 'undefined') return;
+  let disabled = getDisabledTools();
+  if (enabled) {
+    disabled = disabled.filter((id) => id !== toolId);
+  } else {
+    if (!disabled.includes(toolId)) {
+      disabled.push(toolId);
+    }
+  }
+  localStorage.setItem(DISABLED_TOOLS_KEY, JSON.stringify(disabled));
+  window.dispatchEvent(new Event('webtoolhub_feature_toggle_updated'));
+}
+
+export function setBatchToolsEnabled(toolIds: string[], enabled: boolean) {
+  if (typeof window === 'undefined') return;
+  let disabled = getDisabledTools();
+  if (enabled) {
+    disabled = disabled.filter((id) => !toolIds.includes(id));
+  } else {
+    toolIds.forEach((id) => {
+      if (!disabled.includes(id)) disabled.push(id);
+    });
+  }
+  localStorage.setItem(DISABLED_TOOLS_KEY, JSON.stringify(disabled));
+  window.dispatchEvent(new Event('webtoolhub_feature_toggle_updated'));
+}
+
+/**
+ * 11. 💰 글로벌 광고 활성화 / 비활성화 제어
+ */
+export function getAdsEnabled(): boolean {
+  if (typeof window === 'undefined') return true;
+  const saved = localStorage.getItem(ADS_ENABLED_KEY);
+  return saved === null ? true : saved === 'true';
+}
+
+export function setAdsEnabled(enabled: boolean) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(ADS_ENABLED_KEY, String(enabled));
+  window.dispatchEvent(new Event('webtoolhub_ads_toggle_updated'));
+}
+
+/**
  * GA4 동적 주입
  */
 export function initGoogleAnalytics(measurementId: string) {
@@ -488,3 +555,4 @@ export function initGoogleAnalytics(measurementId: string) {
   window.gtag('js', new Date());
   window.gtag('config', measurementId);
 }
+

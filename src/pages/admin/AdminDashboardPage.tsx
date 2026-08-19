@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
+import { TOOLS_REGISTRY } from '../../config/toolsRegistry';
 import {
   getAnalyticsSummary,
   resetToolStatCount,
@@ -10,9 +11,14 @@ import {
   exportAnalyticsToCsv,
   importAnalyticsData,
   resetAllAnalytics,
+  getDisabledTools,
+  setToolEnabled,
+  setBatchToolsEnabled,
+  getAdsEnabled,
+  setAdsEnabled,
   type GlobalBannerConfig,
 } from '../../utils/analytics';
-import type { FeedbackPost } from '../../types';
+import type { FeedbackPost, ToolCategory } from '../../types';
 import {
   Lock,
   Key,
@@ -49,7 +55,13 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  ToggleLeft,
+  ToggleRight,
+  Sliders,
+  CheckSquare,
+  Square,
 } from 'lucide-react';
+
 import confetti from 'canvas-confetti';
 
 async function hashPassword(plainText: string): Promise<string> {
@@ -62,7 +74,7 @@ async function hashPassword(plainText: string): Promise<string> {
 
 const ADMIN_PASSWORD_HASH = '1f654b9d0e14bf9d7ef84976c66cf17f698a9fa6f164ce68971f11c750b2ed65';
 
-type AdminTab = 'overview' | 'ads' | 'search' | 'banner' | 'health' | 'backup' | 'feedback';
+type AdminTab = 'overview' | 'controls' | 'ads' | 'search' | 'banner' | 'health' | 'backup' | 'feedback';
 
 const FEEDBACKS_PER_PAGE = 10;
 
@@ -74,6 +86,11 @@ export const AdminDashboardPage: React.FC = () => {
   });
   const [posts, setPosts] = useState<FeedbackPost[]>([]);
   const [, setRefreshCount] = useState<number>(0);
+
+  // ⚙️ 메뉴 및 광고 제어 상태 ⭐
+  const [disabledTools, setDisabledToolsState] = useState<string[]>(() => getDisabledTools());
+  const [adsEnabled, setAdsEnabledState] = useState<boolean>(() => getAdsEnabled());
+  const [controlSavedNotice, setControlSavedNotice] = useState<string>('');
 
   // 피드백 관리 탭: 페이징 & 상세 모달 팝업 상태 ⭐
   const [feedbackPage, setFeedbackPage] = useState<number>(1);
@@ -159,7 +176,6 @@ export const AdminDashboardPage: React.FC = () => {
     if (selectedFeedback && selectedFeedback.id === id) {
       setSelectedFeedback(null);
     }
-    // 페이지 초과 시 이전 페이지로 조정
     if ((feedbackPage - 1) * FEEDBACKS_PER_PAGE >= nextPosts.length && feedbackPage > 1) {
       setFeedbackPage((p) => p - 1);
     }
@@ -171,6 +187,42 @@ export const AdminDashboardPage: React.FC = () => {
     setBannerSavedAlert(true);
     setTimeout(() => setBannerSavedAlert(false), 3000);
     confetti({ particleCount: 40, spread: 40 });
+  };
+
+  // ⚙️ 기능 제어 핸들러 ⭐
+  const handleToggleTool = (toolId: string) => {
+    const isCurrentlyDisabled = disabledTools.includes(toolId);
+    const nextEnabled = isCurrentlyDisabled; // 현재 꺼져있으면 켬, 켜져있으면 끔
+    setToolEnabled(toolId, nextEnabled);
+    setDisabledToolsState(getDisabledTools());
+    showNotice(nextEnabled ? `"${toolId}" 도구가 활성화되었습니다.` : `"${toolId}" 도구가 비활성화(점검 모드)되었습니다.`);
+  };
+
+  const handleToggleCategory = (category: ToolCategory, enable: boolean) => {
+    const categoryToolIds = TOOLS_REGISTRY.filter((t) => t.category === category).map((t) => t.id);
+    setBatchToolsEnabled(categoryToolIds, enable);
+    setDisabledToolsState(getDisabledTools());
+    showNotice(enable ? `[${category.toUpperCase()}] 카테고리의 모든 도구가 활성화되었습니다.` : `[${category.toUpperCase()}] 카테고리의 모든 도구가 비활성화되었습니다.`);
+  };
+
+  const handleToggleAllTools = (enable: boolean) => {
+    const allIds = TOOLS_REGISTRY.map((t) => t.id);
+    setBatchToolsEnabled(allIds, enable);
+    setDisabledToolsState(getDisabledTools());
+    showNotice(enable ? '모든 24개 도구가 활성화되었습니다!' : '모든 도구가 비활성화(전체 점검)되었습니다.');
+    confetti({ particleCount: 50, spread: 50 });
+  };
+
+  const handleToggleAds = (enable: boolean) => {
+    setAdsEnabled(enable);
+    setAdsEnabledState(enable);
+    showNotice(enable ? '글로벌 광고 배너가 활성화되었습니다.' : '글로벌 광고 배너가 비활성화(숨김)되었습니다.');
+    confetti({ particleCount: 30, spread: 30 });
+  };
+
+  const showNotice = (msg: string) => {
+    setControlSavedNotice(msg);
+    setTimeout(() => setControlSavedNotice(''), 3000);
   };
 
   const handleExportJson = () => {
@@ -207,6 +259,8 @@ export const AdminDashboardPage: React.FC = () => {
         const saved = localStorage.getItem('webtoolhub_feedbacks');
         if (saved) setPosts(JSON.parse(saved));
         setBannerConfigState(getGlobalBanner());
+        setDisabledToolsState(getDisabledTools());
+        setAdsEnabledState(getAdsEnabled());
       } else {
         alert('올바른 백업 JSON 파일 형식이 아닙니다.');
       }
@@ -245,12 +299,14 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  const categories: ToolCategory[] = ['pdf', 'image', 'media', 'text', 'community'];
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
       <ToolHeader
         toolId="admin-dashboard"
         title="통합 관리자 엔터프라이즈 센터 (Admin Master)"
-        description="실시간 트래픽, 광고 수익화, 인기 검색어, 글로벌 공지 배너 및 피드백 관리를 총괄 제어합니다."
+        description="실시간 트래픽, 메뉴 및 광고 온/오프 제어, 인기 검색어, 글로벌 공지 배너 및 피드백 관리를 총괄 제어합니다."
         badgeText="Enterprise Security"
       />
 
@@ -313,7 +369,7 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* 6대 고도화 탭 메뉴 */}
+            {/* 7대 고도화 탭 메뉴 */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setActiveTab('overview')}
@@ -328,6 +384,21 @@ export const AdminDashboardPage: React.FC = () => {
                 <BarChart3 size={15} /> 📊 종합 통계
               </button>
 
+              {/* ⚙️ 신규 메뉴 & 광고 제어 탭 ⭐ */}
+              <button
+                onClick={() => setActiveTab('controls')}
+                className="btn-primary"
+                style={{
+                  border: activeTab === 'controls' ? '2px solid #ffffff' : '1px solid var(--border-color)',
+                  background: activeTab === 'controls' ? 'linear-gradient(135deg, #ec4899, #8b5cf6)' : 'var(--bg-tertiary)',
+                  color: '#ffffff',
+                  fontWeight: 700,
+                  fontSize: '0.85rem',
+                }}
+              >
+                <Sliders size={15} /> ⚙️ 메뉴 & 광고 On/Off 제어
+              </button>
+
               <button
                 onClick={() => setActiveTab('ads')}
                 className="btn-secondary"
@@ -338,7 +409,7 @@ export const AdminDashboardPage: React.FC = () => {
                   fontSize: '0.85rem',
                 }}
               >
-                <DollarSign size={15} /> 💰 광고 & 수익
+                <DollarSign size={15} /> 💰 광고 수익 & 성과
               </button>
 
               <button
@@ -407,6 +478,185 @@ export const AdminDashboardPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* ⚙️ 0. 메뉴 & 광고 On/Off 제어 탭 ⭐ */}
+          {activeTab === 'controls' && (
+            <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {/* 알림 배너 */}
+              {controlSavedNotice && (
+                <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid #10b981', padding: '0.75rem 1.25rem', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <CheckCircle size={18} /> {controlSavedNotice}
+                </div>
+              )}
+
+              {/* 1) 💰 글로벌 광고 활성화/비활성화 카드 */}
+              <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.25rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <DollarSign size={22} /> 사이트 전체 광고 배너 On / Off 제어
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                      애드센스 심사 중이거나 디버깅 시 1클릭으로 사이트 전체의 광고 배너 슬롯을 즉시 켜거나 끌 수 있습니다.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 700, color: adsEnabled ? '#10b981' : '#ef4444' }}>
+                      {adsEnabled ? '광고 노출 활성화 (ON)' : '광고 전체 숨김 (OFF)'}
+                    </span>
+                    <button
+                      onClick={() => handleToggleAds(!adsEnabled)}
+                      style={{
+                        background: adsEnabled ? 'linear-gradient(135deg, #10b981, #059669)' : 'rgba(239, 68, 68, 0.2)',
+                        border: adsEnabled ? 'none' : '1px solid #ef4444',
+                        color: '#ffffff',
+                        padding: '0.5rem 1.25rem',
+                        borderRadius: 'var(--radius-full)',
+                        fontSize: '0.9rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        transition: 'var(--transition-fast)',
+                      }}
+                    >
+                      {adsEnabled ? <ToggleRight size={20} /> : <ToggleLeft size={20} />}
+                      {adsEnabled ? '광고 끄기 (Disable)' : '광고 켜기 (Enable)'}
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.82rem', color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '0.8rem 1rem', borderRadius: 'var(--radius-md)' }}>
+                  <span>📌 현재 적용 상태: <strong style={{ color: adsEnabled ? '#10b981' : '#ef4444' }}>{adsEnabled ? '모든 광고 슬롯 활성 (홈 상/하단, 사이드바, 도구별 슬롯)' : '모든 광고 컴포넌트 렌더링 차단됨'}</strong></span>
+                </div>
+              </div>
+
+              {/* 2) 🛠️ 24개 전체 도구 On/Off 제어 매트릭스 */}
+              <div className="glass-panel" style={{ padding: '1.75rem', borderRadius: 'var(--radius-lg)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <Wrench size={22} /> 개별 도구(메뉴) 활성화 / 비활성화 (점검 모드)
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
+                      비활성화된 도구는 사이드바/홈에 '점검 중'으로 표시되며, 페이지 접속 시 안내 화면이 표출됩니다.
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={() => handleToggleAllTools(true)}
+                      className="btn-secondary"
+                      style={{ fontSize: '0.82rem', padding: '0.4rem 0.8rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                    >
+                      <CheckSquare size={14} /> 전체 24개 툴 켜기
+                    </button>
+                    <button
+                      onClick={() => handleToggleAllTools(false)}
+                      className="btn-secondary"
+                      style={{ fontSize: '0.82rem', padding: '0.4rem 0.8rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                    >
+                      <Square size={14} /> 전체 툴 끄기 (점검)
+                    </button>
+                  </div>
+                </div>
+
+                {/* 카테고리별 도구 토글 목록 */}
+                {categories.map((catKey) => {
+                  const categoryTools = TOOLS_REGISTRY.filter((t) => t.category === catKey);
+                  const enabledCount = categoryTools.filter((t) => !disabledTools.includes(t.id)).length;
+
+                  return (
+                    <div key={catKey} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--bg-secondary)', padding: '1.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-primary)' }}>
+                            {catKey === 'pdf' && '📄 PDF 도구'}
+                            {catKey === 'image' && '🖼️ 이미지 & AI 도구'}
+                            {catKey === 'media' && '🎬 미디어 & GIF 도구'}
+                            {catKey === 'text' && '🔤 텍스트 유틸리티'}
+                            {catKey === 'community' && '💬 커뮤니티'}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', background: 'rgba(99, 102, 241, 0.15)', color: 'var(--accent-primary)', padding: '0.15rem 0.5rem', borderRadius: 'var(--radius-full)', fontWeight: 600 }}>
+                            {enabledCount} / {categoryTools.length} 활성화됨
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.4rem' }}>
+                          <button
+                            onClick={() => handleToggleCategory(catKey, true)}
+                            style={{ background: 'none', border: '1px solid #10b981', color: '#10b981', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            일괄 켜기
+                          </button>
+                          <button
+                            onClick={() => handleToggleCategory(catKey, false)}
+                            style={{ background: 'none', border: '1px solid #ef4444', color: '#ef4444', fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                          >
+                            일괄 끄기
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 도구 리스트 그리드 */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
+                        {categoryTools.map((tool) => {
+                          const isEnabled = !disabledTools.includes(tool.id);
+                          return (
+                            <div
+                              key={tool.id}
+                              style={{
+                                padding: '0.75rem 1rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: isEnabled ? 'var(--bg-primary)' : 'rgba(239, 68, 68, 0.05)',
+                                border: isEnabled ? '1px solid var(--border-color)' : '1px dashed rgba(239, 68, 68, 0.4)',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                              }}
+                            >
+                              <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                                <span style={{ fontSize: '0.88rem', fontWeight: 700, color: isEnabled ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                                  {tool.title}
+                                </span>
+                                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                                  {tool.path}
+                                </span>
+                              </div>
+
+                              <button
+                                onClick={() => handleToggleTool(tool.id)}
+                                style={{
+                                  background: isEnabled ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                                  border: isEnabled ? '1px solid #10b981' : '1px solid #ef4444',
+                                  color: isEnabled ? '#10b981' : '#ef4444',
+                                  padding: '0.3rem 0.65rem',
+                                  borderRadius: 'var(--radius-sm)',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.25rem',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {isEnabled ? <ToggleRight size={15} /> : <ToggleLeft size={15} />}
+                                {isEnabled ? 'ON' : 'OFF'}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* 1. 📊 종합 통계 탭 */}
           {activeTab === 'overview' && (

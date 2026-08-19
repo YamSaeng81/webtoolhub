@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { TOOLS_REGISTRY } from '../../config/toolsRegistry';
 import { AdBanner } from '../ads/AdBanner';
 import { useLanguage } from '../../context/LanguageContext';
+import { isToolEnabled } from '../../utils/analytics';
 import {
   Layers,
   Minimize2,
@@ -23,6 +24,7 @@ import {
   Film,
   Video,
   X,
+  Wrench,
 } from 'lucide-react';
 import type { ToolCategory } from '../../types';
 
@@ -35,6 +37,13 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMobileOpen, onCloseMobile }) => {
   const { language, t } = useLanguage();
+  const [, setToggleUpdate] = useState<number>(0);
+
+  useEffect(() => {
+    const handleToggle = () => setToggleUpdate((p) => p + 1);
+    window.addEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+    return () => window.removeEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+  }, []);
 
   const renderIcon = (iconName: string) => {
     switch (iconName) {
@@ -89,6 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               {categoryTools.map((tool) => {
                 const isActive = currentPath === tool.path;
+                const enabled = isToolEnabled(tool.id);
                 const localizedTitle = tool.titleMap[language] || tool.title;
                 return (
                   <button
@@ -97,25 +107,33 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.6rem',
+                      justifyContent: 'space-between',
                       padding: '0.6rem 0.8rem',
                       minHeight: '44px',
                       borderRadius: 'var(--radius-md)',
                       border: 'none',
                       background: isActive ? 'var(--accent-primary)' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--text-main)',
+                      color: isActive ? '#ffffff' : enabled ? 'var(--text-main)' : 'var(--text-muted)',
                       fontSize: '0.85rem',
                       fontWeight: isActive ? 600 : 400,
                       cursor: 'pointer',
                       textAlign: 'left',
                       width: '100%',
+                      opacity: enabled ? 1 : 0.6,
                       transition: 'var(--transition-fast)',
                     }}
                   >
-                    {renderIcon(tool.iconName)}
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {localizedTitle}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', overflow: 'hidden' }}>
+                      {renderIcon(tool.iconName)}
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {localizedTitle}
+                      </span>
+                    </div>
+                    {!enabled && (
+                      <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', padding: '0.1rem 0.35rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '0.15rem', flexShrink: 0 }}>
+                        <Wrench size={10} /> 점검
+                      </span>
+                    )}
                   </button>
                 );
               })}

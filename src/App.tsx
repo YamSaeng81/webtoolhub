@@ -5,7 +5,9 @@ import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
 import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Home } from './pages/Home';
-import { trackPageView } from './utils/analytics';
+import { trackPageView, isToolEnabled } from './utils/analytics';
+import { TOOLS_REGISTRY } from './config/toolsRegistry';
+import { MaintenanceNotice } from './components/common/MaintenanceNotice';
 
 // Pages Import
 import { AboutPage } from './pages/AboutPage';
@@ -51,14 +53,24 @@ export default function App() {
   });
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [, setToggleUpdate] = useState<number>(0);
 
   useEffect(() => {
     const handlePopState = () => {
       setCurrentPath(window.location.pathname || '/');
     };
 
+    const handleToggleUpdate = () => {
+      setToggleUpdate((p) => p + 1);
+    };
+
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('webtoolhub_feature_toggle_updated', handleToggleUpdate);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('webtoolhub_feature_toggle_updated', handleToggleUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -76,6 +88,12 @@ export default function App() {
   };
 
   const renderPage = () => {
+    // 🛠️ 도구 비활성화 여부 검사 (Maintenance Check)
+    const matchingTool = TOOLS_REGISTRY.find((t) => t.path === currentPath);
+    if (matchingTool && !isToolEnabled(matchingTool.id)) {
+      return <MaintenanceNotice toolName={matchingTool.title} onGoHome={() => handleNavigate('/')} />;
+    }
+
     switch (currentPath) {
       case '/':
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AdUnitProps } from '../../types';
-import { trackAdImpression, trackAdClick } from '../../utils/analytics';
+import { trackAdImpression, trackAdClick, getAdsEnabled } from '../../utils/analytics';
 
 declare global {
   interface Window {
@@ -14,7 +14,21 @@ export const AdBanner: React.FC<AdUnitProps> = ({
   style,
   className,
 }) => {
+  const [adsEnabled, setAdsEnabledState] = useState<boolean>(() => getAdsEnabled());
+
   useEffect(() => {
+    const handleAdsToggle = () => {
+      setAdsEnabledState(getAdsEnabled());
+    };
+
+    window.addEventListener('webtoolhub_ads_toggle_updated', handleAdsToggle);
+    return () => {
+      window.removeEventListener('webtoolhub_ads_toggle_updated', handleAdsToggle);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!adsEnabled) return;
     trackAdImpression(slotId);
     try {
       if (typeof window !== 'undefined') {
@@ -23,7 +37,12 @@ export const AdBanner: React.FC<AdUnitProps> = ({
     } catch (e) {
       // 광고 푸시 예외 핸들링
     }
-  }, [slotId]);
+  }, [slotId, adsEnabled]);
+
+  // 관리자가 광고를 비활성화한 경우 렌더링하지 않음 ⭐
+  if (!adsEnabled) {
+    return null;
+  }
 
   return (
     <div
