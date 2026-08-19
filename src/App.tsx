@@ -7,7 +7,7 @@ import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Home } from './pages/Home';
 import { trackPageView, isToolEnabled } from './utils/analytics';
 import { TOOLS_REGISTRY } from './config/toolsRegistry';
-import { MaintenanceNotice } from './components/common/MaintenanceNotice';
+
 
 // Pages Import
 import { AboutPage } from './pages/AboutPage';
@@ -88,15 +88,16 @@ export default function App() {
   };
 
   const renderPage = () => {
-    // 🛠️ 도구 비활성화 여부 검사 (Maintenance Check)
+    // 🛠️ 도구 비활성화 여부 검사 (비활성화 시 원래 없었던 것처럼 홈으로 연결 ⭐)
     const matchingTool = TOOLS_REGISTRY.find((t) => t.path === currentPath);
     if (matchingTool && !isToolEnabled(matchingTool.id)) {
-      return <MaintenanceNotice toolName={matchingTool.title} onGoHome={() => handleNavigate('/')} />;
+      return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
     }
 
     switch (currentPath) {
       case '/':
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
+
 
       // 애드센스 필수 요구사항 페이지 ⭐
       case '/about':

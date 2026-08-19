@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TOOLS_REGISTRY } from '../../config/toolsRegistry';
 import { useLanguage } from '../../context/LanguageContext';
+import { isToolEnabled } from '../../utils/analytics';
 import {
   Home,
   FileText,
@@ -36,6 +37,13 @@ interface MobileBottomNavProps {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, onNavigate }) => {
   const { language, t } = useLanguage();
   const [activeBottomSheet, setActiveBottomSheet] = useState<ToolCategory | null>(null);
+  const [, setToggleUpdate] = useState<number>(0);
+
+  useEffect(() => {
+    const handleToggle = () => setToggleUpdate((p) => p + 1);
+    window.addEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+    return () => window.removeEventListener('webtoolhub_feature_toggle_updated', handleToggle);
+  }, []);
 
   const renderIcon = (iconName: string) => {
     switch (iconName) {
@@ -71,14 +79,24 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, o
     ja: { home: 'ホーム', pdf: 'PDF', image: '画像', media: 'メディア', text: 'テキスト', community: '掲示板' },
   }[language] || { home: 'Home', pdf: 'PDF', image: 'Image', media: 'Media', text: 'Text', community: 'Feedback' };
 
-  const navItems: { key: string; label: string; icon: React.ReactNode; category?: ToolCategory; path?: string }[] = [
-    { key: 'home', label: tabLabels.home, icon: <Home size={20} />, path: '/' },
-    { key: 'pdf', label: tabLabels.pdf, icon: <FileText size={20} />, category: 'pdf' },
-    { key: 'image', label: tabLabels.image, icon: <ImageIcon size={20} />, category: 'image' },
-    { key: 'media', label: tabLabels.media, icon: <Film size={20} />, category: 'media' },
-    { key: 'text', label: tabLabels.text, icon: <Type size={20} />, category: 'text' },
-    { key: 'community', label: tabLabels.community, icon: <MessageSquare size={20} />, path: '/community/feedback' },
+  // 각 카테고리별 활성 도구 수 계산 ⭐
+  const pdfEnabledCount = TOOLS_REGISTRY.filter((t) => t.category === 'pdf' && isToolEnabled(t.id)).length;
+  const imageEnabledCount = TOOLS_REGISTRY.filter((t) => t.category === 'image' && isToolEnabled(t.id)).length;
+  const mediaEnabledCount = TOOLS_REGISTRY.filter((t) => t.category === 'media' && isToolEnabled(t.id)).length;
+  const textEnabledCount = TOOLS_REGISTRY.filter((t) => t.category === 'text' && isToolEnabled(t.id)).length;
+  const communityEnabled = isToolEnabled('feedback-board');
+
+  const rawNavItems: { key: string; label: string; icon: React.ReactNode; category?: ToolCategory; path?: string; visible: boolean }[] = [
+    { key: 'home', label: tabLabels.home, icon: <Home size={20} />, path: '/', visible: true },
+    { key: 'pdf', label: tabLabels.pdf, icon: <FileText size={20} />, category: 'pdf', visible: pdfEnabledCount > 0 },
+    { key: 'image', label: tabLabels.image, icon: <ImageIcon size={20} />, category: 'image', visible: imageEnabledCount > 0 },
+    { key: 'media', label: tabLabels.media, icon: <Film size={20} />, category: 'media', visible: mediaEnabledCount > 0 },
+    { key: 'text', label: tabLabels.text, icon: <Type size={20} />, category: 'text', visible: textEnabledCount > 0 },
+    { key: 'community', label: tabLabels.community, icon: <MessageSquare size={20} />, path: '/community/feedback', visible: communityEnabled },
   ];
+
+  // 활성 툴이 0개인 카테고리는 모바일 탭 바에서도 완전히 숨김 ⭐
+  const navItems = rawNavItems.filter((item) => item.visible);
 
   const categoryTitles = {
     pdf: t.pdfCategoryTitle,
@@ -107,7 +125,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, o
   };
 
   const activeCategoryTools = activeBottomSheet
-    ? TOOLS_REGISTRY.filter((tool) => tool.category === activeBottomSheet)
+    ? TOOLS_REGISTRY.filter((tool) => tool.category === activeBottomSheet && isToolEnabled(tool.id))
     : [];
 
   return (
@@ -133,7 +151,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({ currentPath, o
       </nav>
 
       {/* 📱 2. 모바일 하단 바텀 시트 소메뉴 팝업 (Mobile Submenu Bottom Sheet) ⭐ */}
-      {activeBottomSheet && (
+      {activeBottomSheet && activeCategoryTools.length > 0 && (
         <div className="bottom-sheet-overlay" onClick={() => setActiveBottomSheet(null)}>
           <div className="bottom-sheet-content" onClick={(e) => e.stopPropagation()}>
             <div className="bottom-sheet-handle" />

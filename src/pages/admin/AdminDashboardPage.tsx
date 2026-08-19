@@ -538,10 +538,10 @@ export const AdminDashboardPage: React.FC = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
                   <div>
                     <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Wrench size={22} /> 개별 도구(메뉴) 활성화 / 비활성화 (점검 모드)
+                      <Wrench size={22} /> 개별 도구(소메뉴) 및 대메뉴 활성화 / 완전 숨김 제어
                     </h3>
                     <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.3rem' }}>
-                      비활성화된 도구는 사이드바/홈에 '점검 중'으로 표시되며, 페이지 접속 시 안내 화면이 표출됩니다.
+                      OFF로 끈 도구는 사이드바/모바일/홈/검색에서 <strong>완전히 사라지며</strong>, 대메뉴 아래 모든 도구가 OFF되면 <strong>대메뉴 카테고리도 자동으로 숨겨집니다.</strong>
                     </p>
                   </div>
 
@@ -558,10 +558,11 @@ export const AdminDashboardPage: React.FC = () => {
                       className="btn-secondary"
                       style={{ fontSize: '0.82rem', padding: '0.4rem 0.8rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                     >
-                      <Square size={14} /> 전체 툴 끄기 (점검)
+                      <Square size={14} /> 전체 툴 숨김
                     </button>
                   </div>
                 </div>
+
 
                 {/* 카테고리별 도구 토글 목록 */}
                 {categories.map((catKey) => {

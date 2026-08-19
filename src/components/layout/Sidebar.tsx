@@ -24,7 +24,6 @@ import {
   Film,
   Video,
   X,
-  Wrench,
 } from 'lucide-react';
 import type { ToolCategory } from '../../types';
 
@@ -88,7 +87,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
   const navContent = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       {categories.map((catKey) => {
-        const categoryTools = TOOLS_REGISTRY.filter((tItem) => tItem.category === catKey);
+        // 활성화된 도구만 필터링 ⭐ (비활성화 시 소메뉴 아예 숨김)
+        const categoryTools = TOOLS_REGISTRY.filter(
+          (tItem) => tItem.category === catKey && isToolEnabled(tItem.id)
+        );
+
+        // 카테고리 내 활성화된 도구가 0개면 대메뉴 자체도 완전히 숨김 ⭐
+        if (categoryTools.length === 0) return null;
 
         return (
           <div key={catKey}>
@@ -98,7 +103,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
               {categoryTools.map((tool) => {
                 const isActive = currentPath === tool.path;
-                const enabled = isToolEnabled(tool.id);
                 const localizedTitle = tool.titleMap[language] || tool.title;
                 return (
                   <button
@@ -107,33 +111,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'space-between',
+                      gap: '0.6rem',
                       padding: '0.6rem 0.8rem',
                       minHeight: '44px',
                       borderRadius: 'var(--radius-md)',
                       border: 'none',
                       background: isActive ? 'var(--accent-primary)' : 'transparent',
-                      color: isActive ? '#ffffff' : enabled ? 'var(--text-main)' : 'var(--text-muted)',
+                      color: isActive ? '#ffffff' : 'var(--text-main)',
                       fontSize: '0.85rem',
                       fontWeight: isActive ? 600 : 400,
                       cursor: 'pointer',
                       textAlign: 'left',
                       width: '100%',
-                      opacity: enabled ? 1 : 0.6,
                       transition: 'var(--transition-fast)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', overflow: 'hidden' }}>
-                      {renderIcon(tool.iconName)}
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {localizedTitle}
-                      </span>
-                    </div>
-                    {!enabled && (
-                      <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', padding: '0.1rem 0.35rem', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '0.15rem', flexShrink: 0 }}>
-                        <Wrench size={10} /> 점검
-                      </span>
-                    )}
+                    {renderIcon(tool.iconName)}
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {localizedTitle}
+                    </span>
                   </button>
                 );
               })}
