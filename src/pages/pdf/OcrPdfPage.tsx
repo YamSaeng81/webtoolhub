@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { recognizeTextFromImage } from '../../utils/ocrService';
 import { mergePdfBuffers } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
@@ -271,6 +273,13 @@ export const OcrPdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="ocr-bottom" />
+
+      <ToolGuideSection
+        toolId="ocr-pdf"
+        toolTitle="무료 PDF & 이미지 OCR 텍스트 추출기 (PDF OCR)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

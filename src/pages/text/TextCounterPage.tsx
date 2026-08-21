@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { analyzeText } from '../../utils/textServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { Copy, Trash2, Check } from 'lucide-react';
@@ -91,6 +93,13 @@ export const TextCounterPage: React.FC = () => {
       </div>
 
       <AdBanner slotId="counter-bottom" />
+
+      <ToolGuideSection
+        toolId="text-counter"
+        toolTitle="무료 글자수 & 바이트(Byte) 실시간 계산기 (Character Counter)"
+        categoryName="텍스트 도구"
+      />
     </div>
   );
 };
+

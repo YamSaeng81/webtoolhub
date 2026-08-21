@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { convertImageFormat } from '../../utils/imageServices';
 import { useLanguage } from '../../context/LanguageContext';
 import confetti from 'canvas-confetti';
@@ -139,6 +141,13 @@ export const ImageConvertPage: React.FC = () => {
       )}
 
       <AdBanner slotId="convert-bottom" />
+
+      <ToolGuideSection
+        toolId="image-convert"
+        toolTitle="무료 이미지 포맷 변환기 (PNG, JPG, WEBP Image Converter)"
+        categoryName="이미지 & AI 도구"
+      />
     </div>
   );
 };
+

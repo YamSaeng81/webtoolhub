@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
@@ -389,6 +391,13 @@ export const QrGeneratorPage: React.FC = () => {
       </div>
 
       <AdBanner slotId="qr-bottom" />
+
+      <ToolGuideSection
+        toolId="image-qr-generator"
+        toolTitle="무료 고화질 QR 코드 생성기 (QR Code Generator)"
+        categoryName="이미지 & AI 도구"
+      />
     </div>
   );
 };
+

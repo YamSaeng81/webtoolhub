@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { rotatePdfPages } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
@@ -253,6 +255,13 @@ export const RotatePdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="rotate-bottom" />
+
+      <ToolGuideSection
+        toolId="pdf-rotate"
+        toolTitle="무료 PDF 페이지 방향 회전 & 영구 저장 (PDF Rotator)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

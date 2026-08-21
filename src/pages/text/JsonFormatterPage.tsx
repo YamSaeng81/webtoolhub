@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { formatJson } from '../../utils/textServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { Copy, Trash2, Check, Code } from 'lucide-react';
@@ -94,6 +96,13 @@ export const JsonFormatterPage: React.FC = () => {
       </div>
 
       <AdBanner slotId="json-bottom" />
+
+      <ToolGuideSection
+        toolId="json-formatter"
+        toolTitle="무료 JSON 정렬 & 문법 검증기 (JSON Formatter & Validator)"
+        categoryName="텍스트 도구"
+      />
     </div>
   );
 };
+

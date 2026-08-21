@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import { audioBufferToWav } from '../../utils/audioServices';
@@ -173,6 +175,13 @@ export const AudioConvertPage: React.FC = () => {
       )}
 
       <AdBanner slotId="audioconvert-bottom" />
+
+      <ToolGuideSection
+        toolId="audio-convert"
+        toolTitle="무료 오디오 포맷 변환기 (MP3, WAV, OGG Audio Converter)"
+        categoryName="미디어 & 오디오 도구"
+      />
     </div>
   );
 };
+

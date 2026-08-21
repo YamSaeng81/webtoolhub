@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { imagesToPdf, type PageSizeMode } from '../../utils/pdfServices';
 import { trackToolUsage } from '../../utils/analytics';
 import confetti from 'canvas-confetti';
@@ -176,6 +178,13 @@ export const ImageToPdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="img2pdf-bottom" />
+
+      <ToolGuideSection
+        toolId="image-to-pdf"
+        toolTitle="무료 이미지 PDF 변환기 (Image to PDF)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

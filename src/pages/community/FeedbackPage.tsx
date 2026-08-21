@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import type { FeedbackPost } from '../../types';
 import confetti from 'canvas-confetti';
@@ -313,6 +315,13 @@ export const FeedbackPage: React.FC = () => {
       </div>
 
       <AdBanner slotId="feedback-bottom" />
+
+      <ToolGuideSection
+        toolId="feedback-board"
+        toolTitle="익명 소통 & 신규 도구 요청 커뮤니티 (Feedback Board)"
+        categoryName="커뮤니티 & 소통"
+      />
     </div>
   );
 };
+

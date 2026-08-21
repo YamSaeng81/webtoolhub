@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { extractPdfPages } from '../../utils/pdfServices';
 import { trackToolUsage } from '../../utils/analytics';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -289,6 +291,13 @@ export const ExtractPdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="extract-bottom" />
+
+      <ToolGuideSection
+        toolId="extract-pdf"
+        toolTitle="무료 PDF 특정 페이지 추출 & 분할 (Extract PDF Pages)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

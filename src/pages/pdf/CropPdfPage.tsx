@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { cropPdfMargins } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
@@ -207,6 +209,13 @@ export const CropPdfPage: React.FC = () => {
       )}
 
       <AdBanner slotId="crop-bottom" />
+
+      <ToolGuideSection
+        toolId="crop-pdf"
+        toolTitle="무료 PDF 여백 자르기 (PDF Margin Crop)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

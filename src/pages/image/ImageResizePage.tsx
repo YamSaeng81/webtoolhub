@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { resizeImage } from '../../utils/imageServices';
 import { useLanguage } from '../../context/LanguageContext';
 import confetti from 'canvas-confetti';
@@ -169,6 +171,13 @@ export const ImageResizePage: React.FC = () => {
       )}
 
       <AdBanner slotId="resize-bottom" />
+
+      <ToolGuideSection
+        toolId="image-resize"
+        toolTitle="무료 이미지 크기 & 해상도 조절 (Image Resizer)"
+        categoryName="이미지 & AI 도구"
+      />
     </div>
   );
 };
+

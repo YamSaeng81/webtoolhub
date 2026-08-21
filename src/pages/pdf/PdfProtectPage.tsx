@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { protectPdf, unlockPdf } from '../../utils/pdfServices';
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
@@ -200,6 +202,13 @@ export const PdfProtectPage: React.FC = () => {
       )}
 
       <AdBanner slotId="protect-bottom" />
+
+      <ToolGuideSection
+        toolId="pdf-protect"
+        toolTitle="무료 PDF 암호 설정 & 잠금 해제 (PDF Protect & Unlock)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

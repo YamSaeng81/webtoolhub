@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import { audioBufferToWav } from '../../utils/audioServices';
@@ -176,6 +178,13 @@ export const VideoToMp3Page: React.FC = () => {
       )}
 
       <AdBanner slotId="video2mp3-bottom" />
+
+      <ToolGuideSection
+        toolId="video-to-mp3"
+        toolTitle="무료 동영상에서 고음질 MP3 음원 추출기 (Video to MP3)"
+        categoryName="미디어 & 비디오 도구"
+      />
     </div>
   );
 };
+

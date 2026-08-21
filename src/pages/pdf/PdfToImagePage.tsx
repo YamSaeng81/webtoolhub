@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { trackToolUsage } from '../../utils/analytics';
 import * as pdfjsLib from 'pdfjs-dist';
 import JSZip from 'jszip';
@@ -179,6 +181,13 @@ export const PdfToImagePage: React.FC = () => {
       )}
 
       <AdBanner slotId="pdf2img-bottom" />
+
+      <ToolGuideSection
+        toolId="pdf-to-image"
+        toolTitle="무료 PDF를 이미지(PNG)로 변환기 (PDF to Image)"
+        categoryName="PDF 도구"
+      />
     </div>
   );
 };
+

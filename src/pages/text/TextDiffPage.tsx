@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ToolHeader } from '../../components/common/ToolHeader';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import { Copy, Check, RotateCcw, Sparkles } from 'lucide-react';
@@ -360,6 +362,13 @@ export const TextDiffPage: React.FC = () => {
       </div>
 
       <AdBanner slotId="textdiff-bottom" />
+
+      <ToolGuideSection
+        toolId="text-diff"
+        toolTitle="무료 텍스트 비교 및 차이점 분석기 (Text Diff Checker)"
+        categoryName="텍스트 도구"
+      />
     </div>
   );
 };
+

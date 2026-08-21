@@ -3,6 +3,8 @@ import { ToolHeader } from '../../components/common/ToolHeader';
 import { FileDropzone } from '../../components/common/FileDropzone';
 import { ProgressBar } from '../../components/common/ProgressBar';
 import { AdBanner } from '../../components/ads/AdBanner';
+import { ToolGuideSection } from '../../components/common/ToolGuideSection';
+
 import { useLanguage } from '../../context/LanguageContext';
 import { trackToolUsage } from '../../utils/analytics';
 import { formatTime } from '../../utils/audioServices';
@@ -269,6 +271,13 @@ export const VideoCutterPage: React.FC = () => {
       )}
 
       <AdBanner slotId="videocutter-bottom" />
+
+      <ToolGuideSection
+        toolId="video-cutter"
+        toolTitle="무료 동영상 구간 자르기 & 편집기 (Video Cutter & Trimmer)"
+        categoryName="미디어 & 비디오 도구"
+      />
     </div>
   );
 };
+
