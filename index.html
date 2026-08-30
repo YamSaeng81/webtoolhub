@@ -7,7 +7,7 @@
     <!-- Naver Search Advisor 소유권 인증 -->
     <meta name="naver-site-verification" content="c02af4f1781f334d157bc0192e88dac4" />
 
-    <!-- Google AdSense 공식 권장: <head> 태그 최상단에 스크립트 및 메타 태그 배치 -->
+    <!-- Google AdSense 공식 스크립트 및 계정 메타태그 -->
     <meta name="google-adsense-account" content="ca-pub-8444978612329175" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8444978612329175" crossorigin="anonymous"></script>
 
@@ -15,31 +15,183 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- 네이버/구글 검색 최적화: 제목 40자 이내, 설명 80자 이내 준수 ⭐ -->
+    <!-- 네이버/구글 검색 최적화: 제목 40자 이내, 설명 80자 이내 준수 -->
     <title>WebToolHub - 무료 올인원 웹 유틸리티 허브</title>
     <meta name="description" content="서버 전송 없이 100% 브라우저 메모리에서 안전하게 처리되는 무료 PDF 병합, AI 누끼 제거, GIF 짤 제작, MP3 변환 유틸리티." />
-    <meta name="keywords" content="웹툴허브, WebToolHub, PDF 병합, AI 누끼 제거, 배경 제거, GIF 제작, QR 코드 생성, 동영상 MP3 변환, 텍스트 비교, 무료 웹툴" />
-    <meta name="author" content="WebToolHub" />
+    <meta name="keywords" content="웹툴허브, WebToolHub, PDF 병합, AI 누끼 제거, 배경 제거, GIF 제작, QR 코드 생성, 동영상 MP3 변환, 텍스트 비교, 무료 웹툴, 파일 변환기" />
+    <meta name="author" content="WebToolHub Team" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://webtoolhub.yhdeabba.com/" />
+    <link rel="canonical" href="https://yhdeabba.com/" />
 
-    <!-- Open Graph (카카오톡, 네이버, 페이스북 링크 미리보기 카드) ⭐ -->
+    <!-- Open Graph (카카오톡, 네이버, 페이스북, 구글 링크 미리보기) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="WebToolHub" />
     <meta property="og:title" content="WebToolHub - 무료 올인원 웹 유틸리티 허브" />
     <meta property="og:description" content="서버 전송 없이 100% 브라우저 메모리에서 안전하게 처리되는 무료 PDF 병합, AI 누끼 제거, GIF 짤 제작, MP3 변환 유틸리티." />
-    <meta property="og:url" content="https://webtoolhub.yhdeabba.com/" />
-    <meta property="og:image" content="https://webtoolhub.yhdeabba.com/favicon.svg" />
+    <meta property="og:url" content="https://yhdeabba.com/" />
+    <meta property="og:image" content="https://yhdeabba.com/favicon.svg" />
     <meta property="og:locale" content="ko_KR" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="WebToolHub - 무료 올인원 웹 유틸리티 허브" />
     <meta name="twitter:description" content="서버 전송 없이 100% 브라우저 메모리에서 안전하게 처리되는 무료 PDF 병합, AI 누끼 제거, GIF 짤 제작, MP3 변환 유틸리티." />
-    <meta name="twitter:image" content="https://webtoolhub.yhdeabba.com/favicon.svg" />
+    <meta name="twitter:image" content="https://yhdeabba.com/favicon.svg" />
+
+    <style>
+      /* 정적 사전 렌더링 텍스트 기본 스타일 (React 로딩 전 및 비JS 봇 대응) */
+      #prerender-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: #1e293b;
+        line-height: 1.7;
+      }
+      #prerender-content h1 { font-size: 2.2rem; font-weight: 800; color: #4f46e5; margin-bottom: 0.8rem; }
+      #prerender-content h2 { font-size: 1.6rem; font-weight: 700; color: #0f172a; margin-top: 2rem; margin-bottom: 0.8rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.4rem; }
+      #prerender-content h3 { font-size: 1.2rem; font-weight: 700; color: #1e293b; margin-top: 1.2rem; }
+      #prerender-content p { margin-bottom: 1rem; color: #475569; }
+      #prerender-content ul { padding-left: 1.5rem; margin-bottom: 1.2rem; }
+      #prerender-content li { margin-bottom: 0.4rem; color: #334155; }
+      #prerender-content table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+      #prerender-content th, #prerender-content td { border: 1px solid #cbd5e1; padding: 0.75rem 1rem; text-align: left; }
+      #prerender-content th { background-color: #f1f5f9; font-weight: 700; color: #0f172a; }
+      .tool-badge { display: inline-block; background: #e0e7ff; color: #4338ca; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.8rem; font-weight: 700; margin-right: 0.5rem; }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- React Root Container (구글 애드센스 봇 및 비JS 환경을 위한 정적 사전 렌더링 콘텐츠 내장) -->
+    <div id="root">
+      <div id="prerender-content">
+        <header>
+          <h1>WebToolHub (웹툴허브) - 스마트 올인원 웹 유틸리티 포털</h1>
+          <p>
+            <strong>서버 업로드 0%!</strong> 사용자의 개인정보와 파일 보안을 100% 보장하는 브라우저 인메모리 기반의 무료 고성능 웹 유틸리티 플랫폼입니다.
+            회원가입이나 프로그램 설치 없이 PDF 편집, AI 이미지 배경 제거, GIF 짤 애니메이션 제작, 동영상 음원 추출, QR 코드 생성 등 24가지 이상의 필수 도구를 무제한 무료로 제공합니다.
+          </p>
+        </header>
+
+        <section>
+          <h2>🛡️ WebToolHub의 핵심 보안 아키텍처: 100% 클라이언트 브라우저 연산</h2>
+          <p>
+            기존의 일반 온라인 파일 변환 사이트들은 사용자의 문서와 사진을 중앙 원격 서버로 업로드하여 변환 작업을 수행합니다.
+            이러한 중앙 집중형 방식은 금융 서류, 계약서, 개인 사진 등의 민감한 정보가 외부 서버에 영구히 저장되거나 해킹으로 유출될 수 있는 중대한 프라이버시 위험을 안고 있습니다.
+          </p>
+          <p>
+            WebToolHub는 최신 웹 표준 기술인 <strong>WebAssembly(WASM)</strong>, <strong>Web Workers</strong>, <strong>HTML5 Canvas API</strong>를 전면 도입하여,
+            모든 파일 변환과 AI 신경망 연산이 사용자의 로컬 컴퓨터 및 스마트폰 내부 메모리 샌드박스 안에서만 안전하게 실행됩니다.
+            따라서 변환 과정에서 사용자의 파일이 외부 인터넷망으로 단 1바이트도 전송되지 않으며, 작업이 끝나면 메모리에서 즉시 영구 파기됩니다.
+          </p>
+        </section>
+
+        <section>
+          <h2>📊 기존 서버 업로드 방식 vs WebToolHub 비교</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>비교 항목</th>
+                <th>기존 일반 웹 툴 서비스</th>
+                <th>WebToolHub (차세대 웹 유틸리티)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>🔒 데이터 보안</strong></td>
+                <td>외부 서버로 파일이 업로드되어 유출 및 저장 위험 존재</td>
+                <td><strong>100% 로컬 브라우저 메모리 연산 (외부 서버 전송 0%)</strong></td>
+              </tr>
+              <tr>
+                <td><strong>⚡ 처리 속도</strong></td>
+                <td>대용량 파일 업로드 및 다운로드 대기 시간 발생 (수 분 소요)</td>
+                <td><strong>네트워크 딜레이 없이 기기 CPU/GPU로 0.1초 즉시 변환</strong></td>
+              </tr>
+              <tr>
+                <td><strong>💾 용량 제한</strong></td>
+                <td>서버 트래픽 비용으로 인해 10MB~50MB 제한 및 유료 결제 유도</td>
+                <td><strong>용량 제한 없는 평생 100% 완전 무료 서비스</strong></td>
+              </tr>
+              <tr>
+                <td><strong>👤 회원가입</strong></td>
+                <td>이메일 가입, 로그인, 신용카드 등록 요구</td>
+                <td><strong>회원가입이나 로그인 없이 1초 만에 즉시 사용 가능</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <h2>🛠️ WebToolHub가 제공하는 24개 필수 웹 유틸리티 카탈로그</h2>
+
+          <h3>📄 1. PDF 전문 도구 (9종)</h3>
+          <ul>
+            <li><span class="tool-badge">PDF</span><strong>PDF 병합 (PDF Merge):</strong> 여러 개의 PDF 문서를 원하는 순서대로 자유롭게 배치하여 하나의 통합 PDF 파일로 초고속 결합합니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF 용량 줄이기 (PDF Compress):</strong> 텍스트 선명도를 보존하면서 최대 80% 용량을 압축하여 이메일 첨부 제한을 해결합니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF 페이지 회전 (PDF Rotate):</strong> 거꾸로 스캔되었거나 가로로 누운 문서를 90도, 180도 바르게 영구 정렬합니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>이미지 ➔ PDF 변환 (Image to PDF):</strong> JPG, PNG, WEBP 사진들을 A4 규격의 고화질 전자책 및 보고서 PDF로 묶어줍니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF ➔ 이미지 변환 (PDF to Image):</strong> PDF 문서의 각 페이지를 2.0x 고해상도 PNG 이미지로 렌더링하여 개별 또는 ZIP으로 다운로드합니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF 페이지 추출 (Extract PDF):</strong> 두꺼운 책이나 논문에서 원하는 페이지만 쏙쏙 골라내어 새 PDF로 분리합니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF 여백 자르기 (Crop PDF):</strong> 상/하/좌/우 불필요한 스캔 테두리 여백을 시각적으로 확인하며 잘라내어 가독성을 높입니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF & 이미지 OCR 글자 인식 (OCR PDF):</strong> 스캔 이미지 속 글자를 인식하여 텍스트로 추출하고 검색 가능한 Searchable PDF를 만듭니다.</li>
+            <li><span class="tool-badge">PDF</span><strong>PDF 암호 설정 및 해제 (PDF Protect & Unlock):</strong> 강력한 256-bit 보안 암호를 설정하거나 기존 암호를 제거합니다.</li>
+          </ul>
+
+          <h3>🖼️ 2. 이미지 & AI 도구 (6종)</h3>
+          <ul>
+            <li><span class="tool-badge">IMAGE</span><strong>AI 이미지 누끼 제거 (AI Background Remover):</strong> 온디바이스 딥러닝 신경망이 인물, 동물, 상품 배경을 0.1초 만에 투명 PNG로 분리합니다.</li>
+            <li><span class="tool-badge">IMAGE</span><strong>QR 코드 생성기 (QR Code Generator):</strong> URL, Wi-Fi 자동 접속, 전화번호를 예쁜 색상과 고해상도 인쇄용 QR 이미지로 만듭니다.</li>
+            <li><span class="tool-badge">IMAGE</span><strong>이미지 용량 줄이기 (Image Compress):</strong> 시각적 화질 손실 없이 용량을 대폭 경량화하여 웹 로딩 속도를 최적화합니다.</li>
+            <li><span class="tool-badge">IMAGE</span><strong>이미지 포맷 변환 (Image Converter):</strong> PNG ⇄ JPG ⇄ WEBP 형식을 클릭 한 번으로 상호 변환합니다.</li>
+            <li><span class="tool-badge">IMAGE</span><strong>이미지 해상도 조절 (Image Resize):</strong> 가로/세로 픽셀(px) 및 비율을 유지하며 고품질 보간법으로 리사이즈합니다.</li>
+            <li><span class="tool-badge">IMAGE</span><strong>파비콘 생성기 (Favicon Generator):</strong> 웹사이트에 필요한 favicon.ico 및 애플 터치 아이콘 풀 패키지를 원클릭 생성합니다.</li>
+          </ul>
+
+          <h3>🎬 3. 미디어 & 비디오 도구 (6종)</h3>
+          <ul>
+            <li><span class="tool-badge">MEDIA</span><strong>움짤 GIF 제작기 (GIF Maker):</strong> 연속 사진들을 모아 프레임 속도와 화질을 조절하며 나만의 고화질 GIF 짤을 제작합니다.</li>
+            <li><span class="tool-badge">MEDIA</span><strong>동영상에서 MP3 추출 (Video to MP3):</strong> MP4, WebM, MOV 영상에서 순수 오디오 트랙만 무손실 320kbps 음원으로 추출합니다.</li>
+            <li><span class="tool-badge">MEDIA</span><strong>오디오 구간 자르기 (Audio Cutter):</strong> 음악의 하이라이트 구간을 시각적 파형을 보며 0.01초 단위로 잘라 스마트폰 벨소리를 만듭니다.</li>
+            <li><span class="tool-badge">MEDIA</span><strong>동영상 구간 자르기 (Video Cutter):</strong> 비디오의 불필요한 앞뒤 부분을 프레임 단위로 트리밍하여 가볍게 저장합니다.</li>
+            <li><span class="tool-badge">MEDIA</span><strong>오디오 포맷 변환 (Audio Converter):</strong> MP3, WAV, OGG 간의 상호 변환을 지원합니다.</li>
+            <li><span class="tool-badge">MEDIA</span><strong>동영상 포맷 변환 (Video Converter):</strong> MP4, WebM 비디오 규격을 서버 업로드 없이 초고속으로 변환합니다.</li>
+          </ul>
+
+          <h3>🔤 4. 텍스트 & 생산성 도구 (3종)</h3>
+          <ul>
+            <li><span class="tool-badge">TEXT</span><strong>글자수 & 바이트 세기 (Text Counter):</strong> 공백 포함/제외 글자 수, UTF-8 바이트(Byte), 단어 수, 예상 읽기 시간을 실시간 계측합니다.</li>
+            <li><span class="tool-badge">TEXT</span><strong>JSON 정렬 및 검증 (JSON Formatter):</strong> 한 줄로 압축된 복잡한 JSON 코드를 들여쓰기 정렬하고 구문 오류(Syntax Error)를 자동 감지합니다.</li>
+            <li><span class="tool-badge">TEXT</span><strong>텍스트 차이점 비교 (Text Diff Checker):</strong> 두 문장이나 계약서 수정본에서 달라진 단어와 글자만 색상으로 핀포인트 대조합니다.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>❓ 자주 묻는 질문 (FAQ)</h2>
+          <div>
+            <h3>Q1. 정말로 내 파일이 외부 서버로 업로드되지 않나요?</h3>
+            <p>네, 100% 확실합니다! 브라우저 개발자 도구(F12)의 네트워크 탭을 열어보시면 수백 메가바이트의 파일도 외부 서버로 전송되지 않고 순수 브라우저 메모리 안에서만 처리되는 것을 직접 기술적으로 검증하실 수 있습니다.</p>
+
+            <h3>Q2. 서비스 이용에 비용이나 횟수 제한이 있나요?</h3>
+            <p>WebToolHub의 모든 웹 유틸리티는 횟수 제한 없는 평생 100% 무료 서비스입니다.</p>
+
+            <h3>Q3. 스마트폰이나 태블릿에서도 잘 동작하나요?</h3>
+            <p>네! 별도의 앱 설치 없이 모바일 크롬, 사파리, 삼성 인터넷 등 모든 최신 모바일 브라우저에서 완벽하게 최적화되어 지원됩니다.</p>
+
+            <h3>Q4. 처리할 수 있는 파일 크기에 제한이 있나요?</h3>
+            <p>서버 트래픽에 의한 인위적 용량 제한은 전혀 없으며, 사용하시는 PC/스마트폰의 메모리가 허용하는 한 기가바이트(GB) 단위 대용량 파일도 작업 가능합니다.</p>
+          </div>
+        </section>
+
+        <footer>
+          <h2>🏢 WebToolHub 정보 & 정책</h2>
+          <p>
+            서비스명: WebToolHub (웹툴허브) | 운영 도메인: https://yhdeabba.com | 고객 지원 및 문의: yh.de.abba@gmail.com<br />
+            © 2026 WebToolHub. All rights reserved. 100% Client-Side Privacy First Utility Platform.
+          </p>
+        </footer>
+      </div>
+    </div>
+
+    <!-- React Bundled Application -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
