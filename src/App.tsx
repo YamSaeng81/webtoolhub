@@ -41,6 +41,8 @@ import { VideoConvertPage } from './pages/media/VideoConvertPage';
 import { TextCounterPage } from './pages/text/TextCounterPage';
 import { JsonFormatterPage } from './pages/text/JsonFormatterPage';
 import { TextDiffPage } from './pages/text/TextDiffPage';
+import { EpubConverterPage } from './pages/text/EpubConverterPage';
+
 
 import { FeedbackPage } from './pages/community/FeedbackPage';
 
@@ -164,6 +166,9 @@ export default function App() {
         return <JsonFormatterPage />;
       case '/text/diff':
         return <TextDiffPage />;
+      case '/text/epub-converter':
+        return <EpubConverterPage />;
+
 
       // 💬 COMMUNITY
       case '/community/feedback':

@@ -23,8 +23,10 @@ import {
   MessageSquare,
   Film,
   Video,
+  BookOpen,
   X,
 } from 'lucide-react';
+
 import type { ToolCategory } from '../../types';
 
 interface SidebarProps {
@@ -64,7 +66,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isMob
       case 'AlignLeft': return <AlignLeft size={18} />;
       case 'Code': return <Code size={18} />;
       case 'FileCode': return <FileCode size={18} />;
+      case 'BookOpen': return <BookOpen size={18} />;
       case 'MessageSquare': return <MessageSquare size={18} />;
+
       default: return <Sparkles size={18} />;
     }
   };

@@ -28,7 +28,9 @@ import {
   Zap,
   Lock,
   ArrowRight,
+  BookOpen,
 } from 'lucide-react';
+
 import type { ToolCategory } from '../types';
 
 interface HomeProps {
@@ -75,7 +77,9 @@ export const Home: React.FC<HomeProps> = ({ onNavigate, searchQuery = '' }) => {
       case 'AlignLeft': return <AlignLeft size={24} />;
       case 'Code': return <Code size={24} />;
       case 'FileCode': return <FileCode size={24} />;
+      case 'BookOpen': return <BookOpen size={24} />;
       case 'MessageSquare': return <MessageSquare size={24} />;
+
       default: return <Sparkles size={24} />;
     }
   };

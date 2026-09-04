@@ -574,6 +574,32 @@ export const ALL_TOOLS: ToolItem[] = [
     path: '/text/diff',
     metaKeywords: ['text diff', '텍스트 비교', 'diff 검사'],
   },
+  {
+    id: 'text-epub-converter',
+    category: 'text',
+    title: 'TXT ⇄ EPUB 전자책 변환기',
+    description: '텍스트 메모장(.txt)을 이북리더기 전용 표준 전자책(.epub)으로 제작하거나, EPUB 파일에서 텍스트를 추출합니다.',
+    titleMap: {
+      ko: 'TXT ⇄ EPUB 전자책 변환기',
+      en: 'TXT ⇄ EPUB E-Book Converter',
+      es: 'Convertidor TXT ⇄ EPUB Libro',
+      zh: 'TXT ⇄ EPUB 电子书转换器',
+      ja: 'TXT ⇄ EPUB 電子書籍変換器',
+    },
+    descriptionMap: {
+      ko: '텍스트 메모장(.txt)을 이북리더기 전용 표준 전자책(.epub)으로 제작하거나, EPUB 파일에서 텍스트를 추출합니다.',
+      en: 'Convert text (.txt) into standard EPUB e-books or extract text from EPUB files.',
+      es: 'Convierta texto (.txt) a libros EPUB estándar o extraiga texto de archivos EPUB.',
+      zh: '将纯文本 (.txt) 转换为标准 EPUB 电子书，或从 EPUB 文件中提取纯文本。',
+      ja: 'テキスト(.txt)を標準EPUB電子書籍に変換、またはEPUBからテキストを抽出します。',
+    },
+    iconName: 'BookOpen',
+    path: '/text/epub-converter',
+    isPopular: true,
+    isNew: true,
+    metaKeywords: ['epub converter', 'txt to epub', 'epub to txt', '전자책 만들기', 'epub 변환기'],
+  },
+
 
   // 💬 COMMUNITY (총 1종)
   {

@@ -376,6 +376,22 @@ const DEFAULT_GUIDES: Record<string, ToolGuideData> = {
       { question: '대용량 텍스트 비교도 가능한가요?', answer: '네, 수천 줄 이상의 긴 소스코드나 문서도 브라우저에서 버벅임 없이 즉시 비교됩니다.' },
     ],
   },
+  'text-epub-converter': {
+    steps: [
+      { title: '1. 파일 업로드 (TXT 또는 EPUB)', desc: '전자책으로 만들 메모장 텍스트 파일이나 텍스트를 추출할 EPUB 도서를 불러옵니다.' },
+      { title: '2. 도서 메타데이터 및 챕터 설정', desc: '도서 제목, 저자명을 입력하고 [제1장 / Chapter 1] 등의 자동 목차 분할 기준을 선택합니다.' },
+      { title: '3. 1초 원클릭 변환 및 다운로드', desc: '국제 표준 EPUB 3.0 전자책 파일 또는 정제된 순수 TXT 텍스트 파일로 저장합니다.' },
+    ],
+    features: ['국제 디지털 출판 표준 EPUB 3.0 및 EPUB 2.0 완벽 규격 호환', '스마트 챕터 자동 목차(TOC) 생성 (제1장, Chapter, 글자수 기준)', '크레마, 리디 페이퍼, 아이폰 도서, 안드로이드 문리더 100% 호환', 'EPUB에서 불필요한 HTML 태그를 제거한 깨끗한 TXT 추출'],
+    techExplanation: 'JSZip 패키저와 DOMParser 파서를 결합하여 mimetype, container.xml, content.opf, toc.ncx, XHTML 챕터 계층 구조를 100% 브라우저 인메모리에서 빌드하고 해독합니다.',
+    proTips: ['텍스트 소설을 전자책으로 만들 때 [제 1 장], [Chapter 1] 등의 형식을 본문에 넣어두면 자동으로 예쁜 전자책 목차가 생성됩니다.'],
+    faqs: [
+      { question: '제작된 EPUB 전자책이 전자책 전용 리더기(크레마, 리디페이퍼 등)에서 잘 열리나요?', answer: '네! 국제 표준 IDPF EPUB 3.0 및 하위 호환 목차(NCX) 규격을 100% 준수하여 제작되므로 크레마, 오닉스, 리디 페이퍼, 아이패드 도서 앱 등 모든 전자책 단말기에서 완벽하게 열립니다.' },
+      { question: '변환하는 소설이나 문서가 외부로 유출되지 않나요?', answer: 'WebToolHub는 100% 브라우저 메모리 연산 방식을 사용하므로, 사용자의 소중한 원고와 텍스트 파일이 외부 인터넷 서버로 단 1바이트도 전송되지 않아 저작권과 보안이 철저히 보호됩니다.' },
+      { question: 'DRM(저작권 암호화)이 걸린 상용 EPUB도 TXT로 변환 가능한가요?', answer: '서점사 전용 암호화(DRM)가 적용된 도서는 저작권 보호 규정에 따라 복호화가 제한되며, 개인 소장용 무암호화(DRM-Free) 표준 EPUB 파일의 텍스트 추출을 완벽하게 지원합니다.' },
+    ],
+  },
+
 
   // 💬 5. COMMUNITY (1종)
   'feedback-board': {
