@@ -12,7 +12,10 @@ import { TOOLS_REGISTRY } from './config/toolsRegistry';
 // Pages Import
 import { AboutPage } from './pages/AboutPage';
 import { ContactPage } from './pages/ContactPage';
+import { PrivacyPolicyPage } from './pages/legal/PrivacyPolicyPage';
+import { TermsOfServicePage } from './pages/legal/TermsOfServicePage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+
 
 import { MergePdfPage } from './pages/pdf/MergePdfPage';
 import { CompressPdfPage } from './pages/pdf/CompressPdfPage';
@@ -106,6 +109,11 @@ export default function App() {
         return <AboutPage />;
       case '/contact':
         return <ContactPage />;
+      case '/privacy':
+        return <PrivacyPolicyPage />;
+      case '/terms':
+        return <TermsOfServicePage />;
+
 
       // 🛡️ 관리자 전용 독립 대시보드
       case '/admin':

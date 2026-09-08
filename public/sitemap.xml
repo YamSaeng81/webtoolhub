@@ -14,10 +14,23 @@
   </url>
   <url>
     <loc>https://webtoolhub.yhdeabba.com/contact</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://webtoolhub.yhdeabba.com/privacy</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://webtoolhub.yhdeabba.com/terms</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <url>
     <loc>https://webtoolhub.yhdeabba.com/pdf/merge</loc>
     <lastmod>2026-08-14</lastmod>
@@ -158,14 +171,21 @@
   </url>
   <url>
     <loc>https://webtoolhub.yhdeabba.com/text/diff</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://webtoolhub.yhdeabba.com/text/epub-converter</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://webtoolhub.yhdeabba.com/community/feedback</loc>
-    <lastmod>2026-08-14</lastmod>
+    <lastmod>2026-09-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
 </urlset>
+

@@ -27,8 +27,10 @@ export const AdBanner: React.FC<AdUnitProps> = ({
     };
   }, []);
 
+  const isNumericSlot = /^\d{10,}$/.test(slotId);
+
   useEffect(() => {
-    if (!adsEnabled) return;
+    if (!adsEnabled || !isNumericSlot) return;
     trackAdImpression(slotId);
     try {
       if (typeof window !== 'undefined') {
@@ -37,12 +39,16 @@ export const AdBanner: React.FC<AdUnitProps> = ({
     } catch (e) {
       // 광고 푸시 예외 핸들링
     }
-  }, [slotId, adsEnabled]);
+  }, [slotId, adsEnabled, isNumericSlot]);
 
-  // 관리자가 광고를 비활성화한 경우 렌더링하지 않음 ⭐
-  if (!adsEnabled) {
+
+  // 🛡️ 구글 애드센스 정책 준수 및 심사 통과 보호 로직:
+  // slotId가 구글 공식 10자리 숫자 ID(/^\d{10,}$/)가 아니면, 빈 공백 박스 및 "게시자 콘텐츠 없는 화면에 광고 게재" 위반을 막기 위해 렌더링하지 않음!
+  if (!adsEnabled || !isNumericSlot) {
     return null;
   }
+
+
 
   return (
     <div

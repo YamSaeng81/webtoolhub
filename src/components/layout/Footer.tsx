@@ -30,9 +30,13 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/community/feedback')}>
               Feedback Board
             </span>
-            <span style={{ cursor: 'pointer' }} onClick={() => onNavigate && onNavigate('/about')}>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--text-main)' }} onClick={() => onNavigate && onNavigate('/privacy')}>
               Privacy Policy
             </span>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--text-main)' }} onClick={() => onNavigate && onNavigate('/terms')}>
+              Terms of Service
+            </span>
+
             <span
               style={{
                 cursor: 'pointer',
