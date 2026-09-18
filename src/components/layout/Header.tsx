@@ -87,7 +87,25 @@ export const Header: React.FC<HeaderProps> = ({ onNavigate, onSearch, onToggleMo
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           
-          {/* Language Selector Dropdown */}
+          {/* 📚 블로그 / 매거진 링크 버튼 */}
+          <button
+            onClick={() => onNavigate('/blog')}
+            className="btn-secondary"
+            style={{
+              padding: '0.35rem 0.75rem',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              color: 'var(--accent-primary)',
+              border: '1px solid var(--accent-primary)',
+              borderRadius: 'var(--radius-full)',
+            }}
+          >
+            <span>📚</span> 매거진
+          </button>
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', background: 'var(--bg-secondary)', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)', border: '1px solid var(--border-color)' }}>
             <Globe size={15} color="var(--accent-primary)" />
             <select

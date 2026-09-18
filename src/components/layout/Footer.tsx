@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, Shield, Lock, Info, Mail, ShieldCheck } from 'lucide-react';
+import { Wrench, Shield, Lock, Info, Mail, ShieldCheck, BookOpen } from 'lucide-react';
 
 interface FooterProps {
   onNavigate?: (path: string) => void;
@@ -35,6 +35,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </span>
             <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--text-main)' }} onClick={() => onNavigate && onNavigate('/terms')}>
               Terms of Service
+            </span>
+            <span style={{ cursor: 'pointer', fontWeight: 600, color: 'var(--accent-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} onClick={() => onNavigate && onNavigate('/blog')}>
+              <BookOpen size={14} /> 매거진 & 팁
             </span>
 
             <span

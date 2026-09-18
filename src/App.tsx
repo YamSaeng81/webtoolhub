@@ -15,6 +15,9 @@ import { ContactPage } from './pages/ContactPage';
 import { PrivacyPolicyPage } from './pages/legal/PrivacyPolicyPage';
 import { TermsOfServicePage } from './pages/legal/TermsOfServicePage';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { BlogListPage } from './pages/blog/BlogListPage';
+import { BlogDetailPage } from './pages/blog/BlogDetailPage';
+
 
 
 import { MergePdfPage } from './pages/pdf/MergePdfPage';
@@ -182,8 +185,17 @@ export default function App() {
       case '/community/feedback':
         return <FeedbackPage />;
 
+      // 📚 IT 매거진 / 블로그
+      case '/blog':
+        return <BlogListPage onNavigate={handleNavigate} />;
+
       default:
+        if (currentPath.startsWith('/blog/')) {
+          const slug = currentPath.replace('/blog/', '');
+          return <BlogDetailPage slug={slug} onNavigate={handleNavigate} />;
+        }
         return <Home onNavigate={handleNavigate} searchQuery={searchQuery} />;
+
     }
   };
 
