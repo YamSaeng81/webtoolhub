@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { BLOG_ARTICLES, getArticleBySlug } from './blogArticles';
 
 describe('Blog Articles Data Integrity', () => {
-  it('should have at least 4 in-depth articles', () => {
-    expect(BLOG_ARTICLES.length).toBeGreaterThanOrEqual(4);
+  it('should have at least 8 in-depth articles', () => {
+    expect(BLOG_ARTICLES.length).toBeGreaterThanOrEqual(8);
   });
 
   it('should have unique slugs for all articles', () => {

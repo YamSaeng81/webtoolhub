@@ -117,6 +117,120 @@ export const BLOG_ARTICLES: BlogArticle[] = [
       <p>항목당 500자(1,500Byte) 기준이라면, 한글 480자 내외에 공백을 적절히 배분하여 95%~98% 분량을 채우는 것이 가장 성의 있는 지원서로 평가받습니다. 실시간으로 글자 수와 바이트 수를 동시에 계측해 주는 신뢰할 수 있는 도구를 곁에 두고 작성하는 것을 권장합니다.</p>
     `,
   },
+  {
+    id: 'article-5',
+    slug: 'gif-compression-optimization-guide',
+    title: '블로그·커뮤니티 업로드용 움짤 GIF 용량 1/5로 줄이는 압축 기술 원리',
+    category: '미디어 편집',
+    summary: '디시인사이드, 네이버 블로그, 트위터의 GIF 첨부 용량 제한(5MB~10MB)을 화질 저하 없이 극복하는 색상 팔레트 최적화 및 프레임 스킵 기법을 분석합니다.',
+    author: 'WebToolHub 그래픽 랩',
+    date: '2026-09-18',
+    readTime: '6분 소요',
+    coverEmoji: '🎞️',
+    relatedToolPath: '/media/gif-maker',
+    relatedToolName: '고성능 무료 GIF 움짤 제작기 바로가기',
+    contentHtml: `
+      <h2>1. 왜 GIF 포맷은 영상보다 용량이 비정상적으로 클까요?</h2>
+      <p>GIF(Graphics Interchange Format)는 1987년에 개발된 초창기 래스터 그래픽 포맷입니다. 현대 비디오 코덱(H.264, AV1 등)은 이전 프레임과 다음 프레임 간의 <em>'움직임 차이(Delta)'</em>만을 기록하여 고압축을 달성하지만, 레거시 GIF는 <strong>매 프레임마다 256색 비트맵 정지 이미지를 독립적으로 나열</strong>하는 무거운 구조를 갖습니다.</p>
+      <p>이로 인해 3초짜리 짧은 1080p 고화질 영상도 GIF로 그대로 변환하면 20MB~30MB를 훌쩍 넘겨버리게 되며, 각종 커뮤니티나 블로그 플랫폼의 첨부 용량 제한(보통 5MB~10MB)에 걸려 업로드가 차단됩니다.</p>
+
+      <h2>2. 시각적 화질을 보존하며 GIF 용량을 줄이는 3대 핵심 기법</h2>
+      <ul>
+        <li><strong>적응형 256색 팔레트 양자화(NeuQuant / Octree Quantization):</strong> 원본의 수백만 가지 색상 중 사람의 눈이 가장 민감하게 인지하는 핵심 256가지 색상만 추출하여 인덱싱 컬러 맵을 재구성합니다.</li>
+        <li><strong>지능형 프레임 레이트(FPS) 조절:</strong> 60FPS의 과도한 프레임 레이트를 자연스러운 움직임을 보장하는 15~20FPS 수준으로 다운샘플링하여 전체 데이터양을 50% 이상 즉시 감축합니다.</li>
+        <li><strong>투명화 디더링 최적화(Lempel-Ziv-Welch 압축):</strong> 움직이지 않는 배경 영역은 이전 프레임의 픽셀을 재사용하도록 투명 처리하여 LZW 사전식 압축 효율을 극대화합니다.</li>
+      </ul>
+
+      <h2>3. WebToolHub GIF 툴을 활용한 원스톱 최적화 팁</h2>
+      <p>외부 인코더 소프트웨어를 복잡하게 설치할 필요 없이, 브라우저에서 바로 사진이나 연속 이미지를 불러와 프레임 지연 시간(Delay ms)과 해상도를 조절하면 1초 만에 2MB 이하의 초경량 고화질 움짤을 완성할 수 있습니다.</p>
+    `,
+  },
+  {
+    id: 'article-6',
+    slug: 'ocr-accuracy-enhancement-guide',
+    title: '스캔 문서 및 이미지 글자 인식(OCR) 정확도 100% 끌어올리는 전처리 꿀팁',
+    category: 'PDF 가이드',
+    summary: '스마트폰으로 촬영한 영수증, 계약서, 논문 이미지에서 오탈자 없이 텍스트를 정확하게 추출하는 이미지 전처리(Binarization, Deskew) 비법을 소개합니다.',
+    author: 'AI 비전 연구팀',
+    date: '2026-09-18',
+    readTime: '5분 소요',
+    coverEmoji: '🔍',
+    relatedToolPath: '/pdf/ocr',
+    relatedToolName: '브라우저 기반 무료 OCR 글자 인식기 바로가기',
+    contentHtml: `
+      <h2>1. OCR(Optical Character Recognition)의 작동 메커니즘</h2>
+      <p>광학 문자 인식(OCR) 엔진(예: Tesseract.js 및 LSTM 신경망)은 입력된 이미지의 명암 대비와 윤곽선을 분석하여 글자의 기하학적 특징(획, 곡선, 교차점)을 찾아냅니다. 따라서 <strong>배경과 글자 간의 대비(Contrast)가 뚜렷할수록, 글자가 수평으로 바르게 정렬되어 있을수록</strong> 인식률은 99.9%에 수렴합니다.</p>
+
+      <h2>2. OCR 인식률을 2배 높이는 4단계 이미지 전처리 수칙</h2>
+      <ol>
+        <li><strong>적응형 이진화(Adaptive Binarization):</strong> 그림자나 조명 얼룩이 있는 회색조 이미지를 완전한 흑백(Black & White) 2단계 색조로 전환하여 텍스트 외곽선을 강조합니다.</li>
+        <li><strong>기울기 보정(Deskew):</strong> 비스듬하게 스캔된 문서는 인식 엔진이 줄바꿈과 띄어쓰기를 오인하게 만듭니다. 수평 각도를 0도로 정렬해 주는 것이 필수적입니다.</li>
+        <li><strong>고해상도 확보(최소 300DPI 권장):</strong> 글자의 세부 획(예: 'ㄹ'과 'ㅁ', 'o'와 'c')이 뭉개지지 않도록 적절한 픽셀 해상도를 유지해야 합니다.</li>
+        <li><strong>언어 모델 설정:</strong> 한글과 영문이 혼용된 문서의 경우 다중 언어 딕셔너리를 동시에 활성화하면 복합 어휘 인식률이 대폭 향상됩니다.</li>
+      </ol>
+
+      <h2>3. 100% 로컬 브라우저 OCR의 보안상 강점</h2>
+      <p>주민등록번호, 사업자등록증, 은행 통장 사본 등 극비 민감 정보가 포함된 서류는 클라우드 OCR API로 전송할 경우 유출 위험이 큽니다. WebToolHub는 WebAssembly로 포팅된 OCR 엔진을 클라이언트 내부에서만 실행하므로 데이터 보안이 완벽하게 지켜집니다.</p>
+    `,
+  },
+  {
+    id: 'article-7',
+    slug: 'video-to-mp3-bitrate-guide',
+    title: '동영상에서 고음질 MP3 음원 추출 시 필수 상식: 비트레이트(kbps)와 포맷 비교',
+    category: '미디어 편집',
+    summary: 'MP4 영상에서 배경음악이나 강의 음성을 추출할 때 128kbps, 192kbps, 320kbps 중 어떤 비트레이트를 선택해야 무손실 원음 품질을 지킬 수 있는지 정리해 드립니다.',
+    author: '사운드 엔지니어링 팁',
+    date: '2026-09-17',
+    readTime: '4분 소요',
+    coverEmoji: '🎵',
+    relatedToolPath: '/media/video-to-mp3',
+    relatedToolName: '초고속 비디오 MP3 음원 추출기 바로가기',
+    contentHtml: `
+      <h2>1. 비트레이트(Bitrate, kbps)란 무엇이며 왜 중요할까요?</h2>
+      <p>비트레이트는 1초 동안 전달되는 오디오 데이터의 양을 의미하며, 단위로는 <strong>kbps(kilobits per second)</strong>를 사용합니다. 비트레이트 수치가 높을수록 소리의 해상도(주파수 대역폭 및 다이내믹 레인지)가 풍부해져 원음에 가까운 깊은 음향을 들려줍니다.</p>
+
+      <h2>2. 상황별 권장 비트레이트 가이드</h2>
+      <ul>
+        <li><strong>128kbps (표준 품질):</strong> 인터넷 강의, 회의 녹취록, 팟캐스트 등 사람의 목소리가 중심인 음성 파일에 최적입니다. 용량이 매우 작아 스마트폰 저장 공간을 절약할 수 있습니다.</li>
+        <li><strong>192kbps (우수 품질):</strong> 일반적인 가요, 유튜브 영상 오디오 트랙을 보관할 때 권장되는 균형 잡힌 설정입니다.</li>
+        <li><strong>320kbps (스튜디오 최고 품질):</strong> 클래식, 오케스트라, 전자음악 등 고음역과 저음역의 디테일이 중요한 음악 파일에 필수적인 프리미엄 음질입니다.</li>
+      </ul>
+
+      <h2>3. 비디오에서 음원을 분리하는 스마트한 방법</h2>
+      <p>영상 속 원본 오디오 스트림(AAC 또는 Opus)을 불필요한 이중 압축 없이 브라우저의 FFmpeg 엔진으로 깨끗하게 디코딩하여 타깃 비트레이트의 MP3로 패키징하면, 지직거리는 잡음 없이 깨끗한 사운드를 영구 소장할 수 있습니다.</p>
+    `,
+  },
+  {
+    id: 'article-8',
+    slug: 'epub-font-rendering-troubleshooting',
+    title: 'EPUB 전자책 폰트 깨짐 및 스타일 렌더링 오류 완벽 해결 가이드',
+    category: '문서 & 취업',
+    summary: '크레마, 리디페이퍼, 킨들, 캘리버(Calibre)에서 전자책을 열었을 때 글자가 외계어로 깨지거나 줄바꿈이 어색할 때 1분 만에 고치는 실전 해결책입니다.',
+    author: '전자출판 테크니컬 리드',
+    date: '2026-09-16',
+    readTime: '5분 소요',
+    coverEmoji: '📖',
+    relatedToolPath: '/text/epub-converter',
+    relatedToolName: '무료 TXT ⇄ EPUB 전자책 변환기 바로가기',
+    contentHtml: `
+      <h2>1. EPUB 전자책에서 폰트 깨짐(글꼴 오류)이 일어나는 근본 원인</h2>
+      <p>EPUB 파일은 본질적으로 HTML, CSS, XML 문서들을 ZIP 형태로 압축한 개방형 표준 전자책 포맷입니다. 리더기에서 글자가 네모 박스(Tofu 현상)나 기괴한 기호로 깨지는 현상은 주로 다음 두 가지 이유로 발생합니다.</p>
+      <ul>
+        <li><strong>문서 인코딩 불일치:</strong> 텍스트 파일이 레거시 EUC-KR이나 ANSI로 저장되어 있는데, EPUB 뷰어가 이를 국제 표준인 <strong>UTF-8</strong>로 파싱하려 할 때 100% 깨짐이 발생합니다.</li>
+        <li><strong>임베디드 폰트 부재:</strong> 전자기기 내부에 한글 글꼴이 내장되어 있지 않은 상태에서 CSS 글꼴 지정이 누락되었을 경우 기본 서체가 누락됩니다.</li>
+      </ul>
+
+      <h2>2. 깨끗한 전자책을 만들기 위한 3단계 점검 리스트</h2>
+      <ol>
+        <li><strong>텍스트 파일 UTF-8 인코딩 통일:</strong> 원본 텍스트 문서를 EPUB으로 변환하기 전에 메모장이나 변환 툴을 통해 UTF-8(BOM 없음)으로 인코딩을 표준화합니다.</li>
+        <li><strong>단락 구분과 문단 태그(&lt;p&gt;) 정규화:</strong> 단순 줄바꿈(Enter)이 아닌 시맨틱 문단 태그로 변환되어야 모든 전자책 단말기에서 글자 크기와 줄간격 조절이 유연하게 동작합니다.</li>
+        <li><strong>메타데이터(제목, 저자, 언어: ko) 명시:</strong> OPF(Package Document) 파일 안에 &lt;dc:language&gt;ko&lt;/dc:language&gt; 속성을 지정해 주면 리더기가 최적의 한국어 렌더링 엔진을 작동시킵니다.</li>
+      </ol>
+
+      <h2>3. WebToolHub EPUB 변환기를 이용한 무결점 전자책 제작</h2>
+      <p>WebToolHub의 EPUB 변환 도구는 원본 텍스트의 인코딩을 자동 감지하여 100% 무결점 UTF-8 XHTML 표준 규격으로 컴파일하므로, 어떤 e-잉크 리더기나 태블릿 앱에서도 글꼴 깨짐 없는 편안한 독서를 즐기실 수 있습니다.</p>
+    `,
+  },
 ];
 
 /**
