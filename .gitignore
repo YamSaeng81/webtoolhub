@@ -22,3 +22,21 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Capacitor & Mobile Native Build Artifacts
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/app/*.iml
+ios/App/Pods/
+ios/App/App.xcworkspace/
+ios/App/build/
+ios/App/*.mode1v3
+ios/App/*.mode2v3
+ios/App/*.moved-aside
+ios/App/*.pbxuser
+ios/App/*.perspectivev3
+

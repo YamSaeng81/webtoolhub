@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WebToolHub</string>
+    <string name="title_activity_main">WebToolHub</string>
+    <string name="package_name">com.yhdeabba.webtoolhub</string>
+    <string name="custom_url_scheme">com.yhdeabba.webtoolhub</string>
+</resources>

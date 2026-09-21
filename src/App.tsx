@@ -7,6 +7,7 @@ import { MobileBottomNav } from './components/layout/MobileBottomNav';
 import { Home } from './pages/Home';
 import { trackPageView, isToolEnabled } from './utils/analytics';
 import { TOOLS_REGISTRY } from './config/toolsRegistry';
+import { initializeMobileApp } from './utils/mobileBridge';
 
 
 // Pages Import
@@ -88,6 +89,21 @@ export default function App() {
     trackPageView(currentPath);
     window.scrollTo(0, 0);
     setIsMobileMenuOpen(false);
+  }, [currentPath]);
+
+  // 📱 Capacitor 모바일 앱 하드웨어 뒤로가기 버튼 및 상태바 라이프사이클 연동
+  useEffect(() => {
+    let cleanupFn: (() => void) | undefined;
+    initializeMobileApp(() => {
+      // 뒤로가기 콜백: 서브페이지에서 누르면 홈('/')으로 복귀
+      setCurrentPath('/');
+    }, currentPath === '/').then((cleanup) => {
+      cleanupFn = cleanup;
+    });
+
+    return () => {
+      if (cleanupFn) cleanupFn();
+    };
   }, [currentPath]);
 
   const handleNavigate = (path: string) => {
